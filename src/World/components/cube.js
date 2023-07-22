@@ -5,7 +5,15 @@ function createCube() {
     const material = new MeshStandardMaterial()
 
     const cube = new Mesh(geometry, material)
-    // cube.rotation.set(-0.5, -0.1, 0.8);
+
+    // cube.tick = (delta) => {
+    //     cube.rotation.x += Math.PI * delta / 6
+    //     cube.rotation.y += Math.PI * delta / 6
+    //     cube.rotation.z += Math.PI * delta / 6
+    // }
+
+    cube.tick = (delta) => {}
+
     return cube
 }
 
