@@ -1,15 +1,18 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+// Get the scene container element from html
+const container = document.querySelector('#scene-container')
+
 // Create a Scene
 const scene = new THREE.Scene();
 
 // Create a red cube
 const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-const cubeMaterial = new THREE.MeshBasicMaterial({ 
-    // color: 'white',
-    // vertexColors: true
-});
+// const cubeMaterial = new THREE.MeshBasicMaterial({ 
+//     // color: 'white',
+//     // vertexColors: true
+// });
 
 
 // Creating a 3x3x3 cube (with random colors right now)
@@ -32,8 +35,8 @@ for (let i = 0; i < 3; i++) {
 
 // Sizes to give aspect ratio in camera and size to renderer
 const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight
+    width: container.clientWidth,
+    height: container.clientHeight
 };
 
 // Add a camera
@@ -43,21 +46,23 @@ camera.lookAt(new THREE.Vector3())
 scene.add(camera);
 
 // Create renderer
-const canvas = document.querySelector('.webgl');
-const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
-});
+// const canvas = document.querySelector('.webgl');
+const renderer = new THREE.WebGLRenderer();
 renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(window.devicePixelRatio);
+// Add the renderer canvas to the container div
+container.append(renderer.domElement);
+renderer.render(scene, camera)
 
 
 // Update the render and camera when the window is resized
-window.addEventListener('resize', function(){ 
-    sizes.width = window.innerWidth
-    sizes.height = window.innerHeight
-    camera.aspect = sizes.width / sizes.height; 
-    camera.updateProjectionMatrix()
-    renderer.setSize(sizes.width, sizes.height)
-})
+// window.addEventListener('resize', function(){ 
+//     sizes.width = window.innerWidth
+//     sizes.height = window.innerHeight
+//     camera.aspect = sizes.width / sizes.height; 
+//     camera.updateProjectionMatrix()
+//     renderer.setSize(sizes.width, sizes.height)
+// })
 
 // Allow Orbiting the scene
 const controls = new OrbitControls( camera, renderer.domElement );
