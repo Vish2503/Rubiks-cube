@@ -7,6 +7,10 @@ function main() {
     const world = new World(container)
 
     world.start()
+
+    container.addEventListener('click', () => {
+        world.rotate90()
+    })
 }
 
 main()
