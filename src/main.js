@@ -8,8 +8,16 @@ function main() {
 
     world.start()
 
+    document.addEventListener('click', () => {
+        world.rotate("F'")
+        // console.log(world.rubikscube.indices)
+        // world.rubikscube.rotateMatrixClockwise()
+        // world.rubikscube.rotateMatrixClockwise()
+        // world.rubikscube.rotateMatrixClockwise()
+        // console.log(world.rubikscube.indices)
+    })
     document.addEventListener('keyup', () => {
-        world.rotate90()
+        world.rotate("R'")
     })
 }
 
