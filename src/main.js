@@ -8,7 +8,7 @@ function main() {
 
     world.start()
 
-    container.addEventListener('click', () => {
+    document.addEventListener('keyup', () => {
         world.rotate90()
     })
 }

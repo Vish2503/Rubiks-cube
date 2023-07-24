@@ -1,4 +1,4 @@
-import { createCube } from './cube';
+import { createPiece } from './piece';
 
 class Rubikscube {
     constructor() {
@@ -8,8 +8,8 @@ class Rubikscube {
             for (let j = 0; j < 3; j++) {
                 this.pieces[i][j] = []
                 for (let k = 0; k < 3; k++) {
-                    this.pieces[i][j][k] = createCube()
-                    this.pieces[i][j][k].position.set((i-1)*0.2, (j-1)*0.2, (k-1)*0.2)    
+                    this.pieces[i][j][k] = createPiece()
+                    this.pieces[i][j][k].position.set((i-1), (j-1), (k-1))    
                 }
             }
         }

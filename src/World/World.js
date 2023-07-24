@@ -3,11 +3,12 @@ import { createScene } from './components/scene';
 import { createCube } from './components/cube';
 import { createLights } from './components/lights';
 import { Rubikscube } from './components/Rubikscube';
+import { AxesHelper } from 'three'; 
 
+import { createControls } from './systems/controls';
 import { createRenderer } from './systems/renderer';
 import { Resizer } from './systems/Resizer';
 import { Loop } from './systems/Loop';
-import { AxesHelper } from 'three'; 
 
 
 let camera;
@@ -27,14 +28,14 @@ class World {
         const axesHelper = new AxesHelper( 5 );
         scene.add( axesHelper );
 
+        const controls = createControls(camera, renderer.domElement)
+        loop.updatables.push(controls)
+
 
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
                 for (let k = 0; k < 3; k++) {
                     scene.add(rubikscube.pieces[i][j][k])
-                    rubikscube.pieces[i][j][k].material.color.r = Math.random()
-                    rubikscube.pieces[i][j][k].material.color.g = Math.random()
-                    rubikscube.pieces[i][j][k].material.color.b = Math.random()
                 }
             }
         }
@@ -44,6 +45,8 @@ class World {
         
         let n = 0
         this.rotate90 = () => {
+            controls.enable = false
+            controls.reset()
             for (let j = 0; j < 3; j++) {
                 for (let k = 0; k < 3; k++) {
                     if (j === 1 && k === 1) continue;
@@ -60,8 +63,8 @@ class World {
                     loop.updatables.splice(loop.updatables.indexOf(rubikscube.pieces[2][1][1]));
                     n++
                     rubikscube.pieces[2][1][1].rotation.x = n * Math.PI / 2
+                    controls.enable = true
                 }
-                console.log(rubikscube.pieces[2][1][1].rotation.x)
             }
 
             // for (let j = 0; j < 3; j++) {
