@@ -11,24 +11,29 @@ const color = [
     new Color(0xffff00)
 ]
 
-function createPiece() {
-    const piece = createCube()
-    const faces = []
-    for (let i = 0; i < 6; i++) {
-        faces[i] = createFace()
-        faces[i].material.color.set(color[i])
-        piece.add(faces[i])
-        // faces[i].material.transparent = true
-        // if (i > 0 && i < 5) faces[i].material.opacity = 0.0;
-    }
-    faces[0].rotateX(Math.PI / 2).position.set(0,0.501,0)
-    faces[1].position.set(0,0,0.501)
-    faces[2].rotateY(Math.PI / 2).position.set(0.501,0,0)
-    faces[3].position.set(0,0,-0.501)
-    faces[4].rotateY(Math.PI / 2).position.set(-0.501,0,0)
-    faces[5].rotateX(Math.PI / 2).position.set(0,-0.501,0)
+class Piece {
+    constructor (i, j, k) {
+        this.cube = createCube()
+        this.faces = []
+        for (let i = 0; i < 6; i++) {
+            this.faces[i] = createFace()
+            this.faces[i].material.color.set(color[i])
+            this.cube.add(this.faces[i])
+        }
+        this.faces[0].rotateX(Math.PI / 2).position.set(0,0.501,0)
+        this.faces[1].position.set(0,0,0.501)
+        this.faces[2].rotateY(Math.PI / 2).position.set(0.501,0,0)
+        this.faces[3].position.set(0,0,-0.501)
+        this.faces[4].rotateY(Math.PI / 2).position.set(-0.501,0,0)
+        this.faces[5].rotateX(Math.PI / 2).position.set(0,-0.501,0)
 
-    return piece
+        this.x = i-1
+        this.y = j-1
+        this.z = k-1
+        this.totalX = 0
+        this.totalY = 0
+        this.totalZ = 0
+    }
 }
 
-export { createPiece }
+export { Piece }

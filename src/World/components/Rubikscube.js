@@ -1,4 +1,4 @@
-import { createPiece } from './piece';
+import { Piece } from './Piece';
 
 class Rubikscube {
     constructor() {
@@ -11,21 +11,22 @@ class Rubikscube {
                 this.pieces[i][j] = []
                 this.indices[i][j] = []
                 for (let k = 0; k < 3; k++) {
-                    this.pieces[i][j][k] = createPiece()
-                    this.pieces[i][j][k].position.set((i-1), (j-1), (k-1)) 
+                    this.pieces[i][j][k] = new Piece(i, j, k)
+                    this.pieces[i][j][k].cube.position.set(this.pieces[i][j][k].x, this.pieces[i][j][k].y, this.pieces[i][j][k].z) 
                     this.indices[i][j][k] = [i,j,k]    
                 }
             }
         }
     }
 
-    rotateMatrixClockwise () {
-        let temp = []
-        temp = this.indices[2][2][2]
-        this.indices[2][2][2] = this.indices[2][0][2]
-        this.indices[2][0][2] = this.indices[2][0][0]
-        this.indices[2][0][0] = this.indices[2][2][0]
-        this.indices[2][2][0] = temp
+    addToScene(scene) {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                for (let k = 0; k < 3; k++) {
+                    scene.add(this.pieces[i][j][k].cube)
+                }
+            }
+        }
     }
 }
 
