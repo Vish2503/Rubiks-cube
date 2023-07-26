@@ -8,16 +8,12 @@ function main() {
 
     world.start()
 
+    const string = "L2 U' R' D F U' R' U' B L' R F L R' D B' F2 U L2 R' U' B2 U2 B' F D2 R' F' U L2"
+    const moves = string.split(" ")
+    let i = 0;
     document.addEventListener('click', () => {
-        world.rotate("F'")
-        // console.log(world.rubikscube.indices)
-        // world.rubikscube.rotateMatrixClockwise()
-        // world.rubikscube.rotateMatrixClockwise()
-        // world.rubikscube.rotateMatrixClockwise()
-        // console.log(world.rubikscube.indices)
-    })
-    document.addEventListener('keyup', () => {
-        world.rotate("R'")
+        world.rotate(moves[i])
+        i++
     })
 }
 
