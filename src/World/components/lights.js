@@ -6,7 +6,7 @@ function createLights() {
 
     light.position.set(5,5,5)
 
-    return {ambientLight, light}
+    return [ambientLight, light]
 }
 
 export { createLights }
