@@ -1,4 +1,4 @@
-import { Color } from 'three';
+import { Color, Vector3 } from 'three';
 import { createCube } from './cube';
 import { createFace } from './face';
 
@@ -33,6 +33,9 @@ class Piece {
         this.totalX = 0
         this.totalY = 0
         this.totalZ = 0
+        this.worldAxisX = new Vector3(1,0,0)
+        this.worldAxisY = new Vector3(0,1,0)
+        this.worldAxisZ = new Vector3(0,0,1)
     }
 }
 

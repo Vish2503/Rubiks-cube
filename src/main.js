@@ -13,7 +13,11 @@ function main() {
 
     world.start()
 
-    const string = "F2 R2 U B2 U' L2 U L2' F2 L B D2 F U F' R' D' F2 L B'"
+    // CURRENT BUG, WHEN ROTATING THE WHOLE CUBE, THE WORLD AXIS REMAINS AT THE SAME PLACE WHICH NEEDS TO BE ALSO ROTATED.
+    const string = "y' y' L F R"
+
+    
+    // const string = "F2 R2 U B2 U' L2 U L2' F2 L B D2 F U F' R' D' F2 L B' x' z R' F R2 D F2 U R U2 R' D' R' U' R y' y' R U R' U R U' R' U' R' U R U' R' U R F R' F' R U R U' R' U'"
     const moves = string.split(" ")
     let i = 0;
     document.addEventListener('click', () => {
@@ -27,7 +31,7 @@ function main() {
 
 function move(move, rubikscube = rubiksCube, loop = world.loop) {
     // get the array of pieces to move in x, y, z and also the direction to rotate in, in dir 
-    const [x, y, z, dir] = getMoveInfo(move)
+    const [x, y, z, dir, rotatingAround] = getMoveInfo(move)
 
     // i_, j_, k_ are the center pieces on which the the rest of the pieces on the face attach to for movement, if the center piece is not given, we move the whole cube so each piece attaches to the core i.e., piece at (1,1,1)
     let i_ = 1
@@ -35,14 +39,29 @@ function move(move, rubikscube = rubiksCube, loop = world.loop) {
     let k_ = 1
     // x, y, z contain the indices of the position which needs to be moved, equivalently i, j, k also hold those. So, a, b, c will hold the indices of the piece which is at the position i, j, k currently.
     let a, b, c
+    if (rotatingAround === "x" && x.length === 1) {
+        [a,b,c] = rubikscube.indices[x[0]][1][1]
+        i_ = a
+        j_ = b
+        k_ = c
+    }
+    else if (rotatingAround === "y" && y.length === 1) {
+        [a,b,c] = rubikscube.indices[1][y[0]][1]
+        i_ = a
+        j_ = b
+        k_ = c
+    }
+    else if (rotatingAround === "z" && z.length === 1) {
+        [a,b,c] = rubikscube.indices[1][1][z[0]]
+        i_ = a
+        j_ = b
+        k_ = c
+    }
     for (const i of x) {
         for (const j of y) {
             for (const k of z) {
-                if (x.length === 1) i_ = i;
-                else if (y.length === 1) j_ = j;
-                else if (z.length === 1) k_ = k;
                 [a,b,c] = rubikscube.indices[i][j][k]
-                if (i === i_ && j === j_ && k === k_) continue;
+                if (a === i_ && b === j_ && c === k_) continue;
                 rubikscube.pieces[i_][j_][k_].cube.attach(rubikscube.pieces[a][b][c].cube)
             }
         }
@@ -53,26 +72,29 @@ function move(move, rubikscube = rubiksCube, loop = world.loop) {
     let total = 0
     rubikscube.pieces[i_][j_][k_].tick = (delta) => {
         const speed = delta * Math.PI * 2
-        if (i_ != 1) rubikscube.pieces[i_][j_][k_].cube.rotation.x += dir * speed
-        else if (j_ != 1) rubikscube.pieces[i_][j_][k_].cube.rotation.y += dir * speed
-        else if (k_ != 1) rubikscube.pieces[i_][j_][k_].cube.rotation.z += dir * speed
+        if (rotatingAround === "x") rubikscube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(rubikscube.pieces[i_][j_][k_].worldAxisX, dir * speed)
+        else if (rotatingAround === "y") rubikscube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(rubikscube.pieces[i_][j_][k_].worldAxisY, dir * speed)
+        else if (rotatingAround === "z") rubikscube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(rubikscube.pieces[i_][j_][k_].worldAxisZ, dir * speed)
         total += dir * speed
 
         // When we are done animating, we can actually change the variables of the piece to be at the rotation it needs to be at and also remove it from the animation loop
         if (Math.abs(total) >= Math.abs(dir * Math.PI / 2)){
             loop.updatables.splice(loop.updatables.indexOf(rubikscube.pieces[i_][j_][k_]))
-            if (i_ != 1) {
+            if (rotatingAround === "x") {
                 rubikscube.pieces[i_][j_][k_].totalX += dir * Math.PI / 2
-                rubikscube.pieces[i_][j_][k_].cube.rotation.x = rubikscube.pieces[i_][j_][k_].totalX
             }
-            else if (j_ != 1) {
+            else if (rotatingAround === "y") {
                 rubikscube.pieces[i_][j_][k_].totalY += dir * Math.PI / 2
-                rubikscube.pieces[i_][j_][k_].cube.rotation.y = rubikscube.pieces[i_][j_][k_].totalY
             }
-            else if (k_ != 1) {
+            else if (rotatingAround === "z") {
                 rubikscube.pieces[i_][j_][k_].totalZ += dir * Math.PI / 2
-                rubikscube.pieces[i_][j_][k_].cube.rotation.z = rubikscube.pieces[i_][j_][k_].totalZ
             }
+            rubikscube.pieces[i_][j_][k_].cube.setRotationFromAxisAngle(new Vector3(1,0,0),0)
+            rubikscube.pieces[i_][j_][k_].cube.setRotationFromAxisAngle(new Vector3(0,1,0),0)
+            rubikscube.pieces[i_][j_][k_].cube.setRotationFromAxisAngle(new Vector3(0,0,1),0)
+            rubikscube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(rubikscube.pieces[i_][j_][k_].worldAxisX, rubikscube.pieces[i_][j_][k_].totalX)
+            rubikscube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(rubikscube.pieces[i_][j_][k_].worldAxisY, rubikscube.pieces[i_][j_][k_].totalY)
+            rubikscube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(rubikscube.pieces[i_][j_][k_].worldAxisZ, rubikscube.pieces[i_][j_][k_].totalZ)
 
             // now we need to change the indices to actually show which piece ends up at the new position
             let new_i, new_j, new_k
@@ -93,7 +115,7 @@ function move(move, rubikscube = rubiksCube, loop = world.loop) {
                 for (const j of y) {
                     for (const k of z) {
                         if (i === i_ && j === j_ && k === k_) continue;
-                        if (i_ != 1) {
+                        if (rotatingAround === "x") {
                             // moving the pieces indices to where they should be after rotation
                             let vector1 = new Vector3(i-1,j-1,k-1)
                             vector1.applyAxisAngle(new Vector3(1,0,0), dir * Math.PI / 2)
@@ -104,7 +126,7 @@ function move(move, rubikscube = rubiksCube, loop = world.loop) {
                             rubikscube.indices[new_i][new_j][new_k][1] = previous[i][j][k][1]
                             rubikscube.indices[new_i][new_j][new_k][2] = previous[i][j][k][2]
                         }
-                        else if (j_ != 1) {
+                        else if (rotatingAround === "y") {
                             // moving the pieces indices to where they should be after rotation
                             let vector1 = new Vector3(i-1,j-1,k-1)
                             vector1.applyAxisAngle(new Vector3(0,1,0), dir * Math.PI / 2)
@@ -115,7 +137,7 @@ function move(move, rubikscube = rubiksCube, loop = world.loop) {
                             rubikscube.indices[new_i][new_j][new_k][1] = previous[i][j][k][1]
                             rubikscube.indices[new_i][new_j][new_k][2] = previous[i][j][k][2]
                         }
-                        else if (k_ != 1) {
+                        else if (rotatingAround === "z") {
                             // moving the pieces indices to where they should be after rotation
                             let vector1 = new Vector3(i-1,j-1,k-1)
                             vector1.applyAxisAngle(new Vector3(0,0,1), dir * Math.PI / 2)
@@ -126,6 +148,23 @@ function move(move, rubikscube = rubiksCube, loop = world.loop) {
                             rubikscube.indices[new_i][new_j][new_k][1] = previous[i][j][k][1]
                             rubikscube.indices[new_i][new_j][new_k][2] = previous[i][j][k][2]
                         }
+                        [a,b,c] = previous[i][j][k]
+                        // if (move.charAt(0) === "x" && ((i === 1 && j === 1) || (i === 1 && k === 1))) {
+                        //     console.log(a,b,c);
+                        //     rubikscube.pieces[a][b][c].worldAxisX.applyAxisAngle(new Vector3(-1,0,0), dir * Math.PI / 2)
+                        //     rubikscube.pieces[a][b][c].worldAxisY.applyAxisAngle(new Vector3(-1,0,0), dir * Math.PI / 2)
+                        //     rubikscube.pieces[a][b][c].worldAxisZ.applyAxisAngle(new Vector3(-1,0,0), dir * Math.PI / 2)
+                        // }
+                        // else if (move.charAt(0) === "y" && ((j === 1 && i === 1) || (j === 1 && k === 1))) {
+                        //     rubikscube.pieces[a][b][c].worldAxisX.applyAxisAngle(new Vector3(0,-1,0), dir * Math.PI / 2)
+                        //     rubikscube.pieces[a][b][c].worldAxisY.applyAxisAngle(new Vector3(0,-1,0), dir * Math.PI / 2)
+                        //     rubikscube.pieces[a][b][c].worldAxisZ.applyAxisAngle(new Vector3(0,-1,0), dir * Math.PI / 2)
+                        // }
+                        // else if (move.charAt(0) === "z" && ((k === 1 && i === 1) || (k === 1 && j === 1))) {
+                        //     rubikscube.pieces[a][b][c].worldAxisX.applyAxisAngle(new Vector3(0,0,-1), dir * Math.PI / 2)
+                        //     rubikscube.pieces[a][b][c].worldAxisY.applyAxisAngle(new Vector3(0,0,-1), dir * Math.PI / 2)
+                        //     rubikscube.pieces[a][b][c].worldAxisZ.applyAxisAngle(new Vector3(0,0,-1), dir * Math.PI / 2)
+                        // }
                     }
                 }
             }
@@ -138,6 +177,7 @@ function getMoveInfo(move) {
     let y = [0,1,2]
     let z = [0,1,2]
     let dir
+    let rotatingAround
     if (!move.charAt(1)) {
         dir = -1
     } else if (move.charAt(1) === "'") {
@@ -149,29 +189,44 @@ function getMoveInfo(move) {
     switch (move.charAt(0)) {
         case "R":
             x = [2]
+            rotatingAround = "x"
             break;
         case "L":
             x = [0]
             dir *= -1
+            rotatingAround = "x"
             break;
         case "U":
             y = [2]
+            rotatingAround = "y"
             break;
         case "D":
             y = [0]
             dir *= -1
+            rotatingAround = "y"
             break;
         case "F":
             z = [2]
+            rotatingAround = "z"
             break;
         case "B":
             z = [0]
             dir *= -1
+            rotatingAround = "z"
+            break;
+        case "x":
+            rotatingAround = "x"
+            break;
+        case "y":
+            rotatingAround = "y"
+            break;
+        case "z":
+            rotatingAround = "z"
             break;
         default:
             break;
     }
-    return [x, y, z, dir]
+    return [x, y, z, dir, rotatingAround]
 }
 
 main()
