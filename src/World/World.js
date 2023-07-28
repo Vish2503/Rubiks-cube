@@ -1,8 +1,6 @@
 import { createCamera } from './components/camera';
 import { createScene } from './components/scene';
 import { createLights } from './components/lights';
-import { Rubikscube } from './components/Rubikscube';
-import { Vector3 } from 'three'; 
 
 import { createControls } from './systems/controls';
 import { createRenderer } from './systems/renderer';
