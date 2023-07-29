@@ -12,7 +12,7 @@ class Rubikscube {
                 this.indices[i][j] = []
                 for (let k = 0; k < 3; k++) {
                     this.pieces[i][j][k] = new Piece(i, j, k)
-                    this.pieces[i][j][k].cube.position.set(this.pieces[i][j][k].x, this.pieces[i][j][k].y, this.pieces[i][j][k].z) 
+                    this.pieces[i][j][k].cube.position.set(i-1,j-1,k-1) 
                     this.indices[i][j][k] = [i,j,k]    
                 }
             }

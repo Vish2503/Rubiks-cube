@@ -12,7 +12,7 @@ const color = [
 ]
 
 class Piece {
-    constructor (i, j, k) {
+    constructor () {
         this.cube = createCube()
         this.faces = []
         for (let i = 0; i < 6; i++) {
@@ -26,13 +26,6 @@ class Piece {
         this.faces[3].position.set(0,0,-0.501)
         this.faces[4].rotateY(Math.PI / 2).position.set(-0.501,0,0)
         this.faces[5].rotateX(Math.PI / 2).position.set(0,-0.501,0)
-
-        this.x = i-1
-        this.y = j-1
-        this.z = k-1
-        this.totalX = 0
-        this.totalY = 0
-        this.totalZ = 0
     }
 }
 
