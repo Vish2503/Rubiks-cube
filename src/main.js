@@ -15,7 +15,7 @@ function main() {
 
     world.start()
     
-    const string = "D U F2' L2 U' B2 F2 D L2 U R' F' D R' F' U L D' F' D R2 x2 R' D D R' D L' U L D R' U' R D L U' L' U' R U R' d R' U' R r' U' R U' R' U U r U"
+    const string = "L2' D F2 U B2 F2 D R2 B2 F L' R2 D L B2 L2 B R2 U D y' U R' U' r B U r2' F' R U R U' R' r' U' R U R U' R' U U' F R U R' U' F' U' M U2' M' U M2' U M U2' M' U2' M2'"
     const moves = string.split(" ")
     let i = 0;
     document.addEventListener('click', () => {
@@ -78,11 +78,11 @@ function move(move) {
             rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(1,0,0), dir * speed)
         } else if (move.charAt(0) === "y" || move.charAt(0) === "u") {
             rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,1,0), dir * speed)
-        } else if (move.charAt(0) === "z" || move.charAt(0) === "f") {
+        } else if (move.charAt(0) === "z" || move.charAt(0) === "f" || move.charAt(0) === "S") {
             rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,0,1), dir * speed)
-        } else if (move.charAt(0) === "l") {
+        } else if (move.charAt(0) === "l" || move.charAt(0) === "M") {
             rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(-1,0,0), dir * speed)
-        } else if (move.charAt(0) === "d") {
+        } else if (move.charAt(0) === "d" || move.charAt(0) === "E") {
             rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,-1,0), dir * speed)
         } else if (move.charAt(0) === "b") {
             rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,0,-1), dir * speed)
@@ -103,11 +103,11 @@ function move(move) {
                 rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(1,0,0), dir * Math.PI / 2)
             } else if (move.charAt(0) === "y" || move.charAt(0) === "u") {
                 rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,1,0), dir * Math.PI / 2)
-            } else if (move.charAt(0) === "z" || move.charAt(0) === "f") {
+            } else if (move.charAt(0) === "z" || move.charAt(0) === "f" || move.charAt(0) === "S") {
                 rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,0,1), dir * Math.PI / 2)
-            } else if (move.charAt(0) === "l") {
+            } else if (move.charAt(0) === "l" || move.charAt(0) === "M") {
                 rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(-1,0,0), dir * Math.PI / 2)
-            } else if (move.charAt(0) === "d") {
+            } else if (move.charAt(0) === "d" || move.charAt(0) === "E") {
                 rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,-1,0), dir * Math.PI / 2)
             } else if (move.charAt(0) === "b") {
                 rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,0,-1), dir * Math.PI / 2)
@@ -137,16 +137,16 @@ function move(move) {
                         if (move.charAt(0) === "R" || move.charAt(0) === "x" || move.charAt(0) === "r") {
                             vector1.applyAxisAngle(new Vector3(1,0,0), dir * Math.PI / 2).round()
                         }
-                        if (move.charAt(0) === "L" || move.charAt(0) === "l") {
+                        if (move.charAt(0) === "L" || move.charAt(0) === "l" || move.charAt(0) === "M") {
                             vector1.applyAxisAngle(new Vector3(-1,0,0), dir * Math.PI / 2).round()
                         }
                         else if (move.charAt(0) === "U" || move.charAt(0) === "y" || move.charAt(0) === "u") {
                             vector1.applyAxisAngle(new Vector3(0,1,0), dir * Math.PI / 2).round()
                         }
-                        else if (move.charAt(0) === "D" || move.charAt(0) === "d") {
+                        else if (move.charAt(0) === "D" || move.charAt(0) === "d" || move.charAt(0) === "E") {
                             vector1.applyAxisAngle(new Vector3(0,-1,0), dir * Math.PI / 2).round()
                         }
-                        else if (move.charAt(0) === "F" || move.charAt(0) === "z" || move.charAt(0) === "f") {
+                        else if (move.charAt(0) === "F" || move.charAt(0) === "z" || move.charAt(0) === "f" || move.charAt(0) === "S") {
                             vector1.applyAxisAngle(new Vector3(0,0,1), dir * Math.PI / 2).round()
                         }
                         else if (move.charAt(0) === "B" || move.charAt(0) === "b") {
@@ -195,6 +195,10 @@ function getMoveInfo(move) {
             x = [0,1]
             rotatingAround = "x"
             break;
+        case "M":
+            x = [1]
+            rotatingAround = "x"
+            break;
         case "U":
             y = [2]
             rotatingAround = "y"
@@ -211,12 +215,20 @@ function getMoveInfo(move) {
             y = [0,1]
             rotatingAround = "y"
             break;
+        case "E":
+            y = [1]
+            rotatingAround = "y"
+            break;
         case "F":
             z = [2]
             rotatingAround = "z"
             break;
         case "f":
             z = [1,2]
+            rotatingAround = "z"
+            break;
+        case "S":
+            z = [1]
             rotatingAround = "z"
             break;
         case "B":
