@@ -1,7 +1,6 @@
-import { pingpong } from 'three/src/math/MathUtils.js';
 import { World } from './World/World.js';
 import { Rubikscube } from './World/components/Rubikscube.js';  
-import { Color, Euler, LatheGeometry, Raycaster, Vector3 } from 'three';  
+import { Euler, Raycaster, Vector3 } from 'three';  
 
 const container = document.querySelector('#scene-container')
 
@@ -16,7 +15,7 @@ function main() {
 
     world.start()
     
-    const string = "D U F2' L2 U' B2 F2 D L2 U R' F' D R' F' U L D' F' D R2 x2 R' D D R' D L' U L D R' U' R D L U' L' U' R U R' U y' R' U' R L' x' U' R U' R' U U L x U"
+    const string = "D U F2' L2 U' B2 F2 D L2 U R' F' D R' F' U L D' F' D R2 x2 R' D D R' D L' U L D R' U' R D L U' L' U' R U R' d R' U' R r' U' R U' R' U U r U"
     const moves = string.split(" ")
     let i = 0;
     document.addEventListener('click', () => {
@@ -75,12 +74,18 @@ function move(move) {
 
         const speed = delta * Math.PI * 2
         
-        if (move.charAt(0) === "x") {
+        if (move.charAt(0) === "x" || move.charAt(0) === "r") {
             rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(1,0,0), dir * speed)
-        } else if (move.charAt(0) === "y") {
+        } else if (move.charAt(0) === "y" || move.charAt(0) === "u") {
             rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,1,0), dir * speed)
-        } else if (move.charAt(0) === "z") {
+        } else if (move.charAt(0) === "z" || move.charAt(0) === "f") {
             rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,0,1), dir * speed)
+        } else if (move.charAt(0) === "l") {
+            rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(-1,0,0), dir * speed)
+        } else if (move.charAt(0) === "d") {
+            rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,-1,0), dir * speed)
+        } else if (move.charAt(0) === "b") {
+            rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,0,-1), dir * speed)
         } else {
             rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(rubiksCube.pieces[i_][j_][k_].cube.position, dir * speed)
         }
@@ -94,12 +99,18 @@ function move(move) {
             currentlyAnimating = false
 
             rubiksCube.pieces[i_][j_][k_].cube.setRotationFromEuler(oldRotation)
-            if (move.charAt(0) === "x") {
+            if (move.charAt(0) === "x" || move.charAt(0) === "r") {
                 rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(1,0,0), dir * Math.PI / 2)
-            } else if (move.charAt(0) === "y") {
+            } else if (move.charAt(0) === "y" || move.charAt(0) === "u") {
                 rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,1,0), dir * Math.PI / 2)
-            } else if (move.charAt(0) === "z") {
+            } else if (move.charAt(0) === "z" || move.charAt(0) === "f") {
                 rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,0,1), dir * Math.PI / 2)
+            } else if (move.charAt(0) === "l") {
+                rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(-1,0,0), dir * Math.PI / 2)
+            } else if (move.charAt(0) === "d") {
+                rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,-1,0), dir * Math.PI / 2)
+            } else if (move.charAt(0) === "b") {
+                rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(0,0,-1), dir * Math.PI / 2)
             } else {
                 rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(rubiksCube.pieces[i_][j_][k_].cube.position, dir * Math.PI / 2)
             }
@@ -114,6 +125,8 @@ function move(move) {
                     for (let k = 0; k < 3; k++) {
                         previous[i][j][k] = []
                         previous[i][j][k] = rubiksCube.indices[i][j][k]
+                        // also using this loop to remove the piece from being attached to the centerpiece
+                        world.scene.attach(rubiksCube.pieces[i][j][k].cube)
                     }
                 }
             }
@@ -121,22 +134,22 @@ function move(move) {
                 for (const j of y) {
                     for (const k of z) {
                         let vector1 = new Vector3(i-1,j-1,k-1)
-                        if (move.charAt(0) === "R" || move.charAt(0) === "x") {
+                        if (move.charAt(0) === "R" || move.charAt(0) === "x" || move.charAt(0) === "r") {
                             vector1.applyAxisAngle(new Vector3(1,0,0), dir * Math.PI / 2).round()
                         }
-                        if (move.charAt(0) === "L") {
+                        if (move.charAt(0) === "L" || move.charAt(0) === "l") {
                             vector1.applyAxisAngle(new Vector3(-1,0,0), dir * Math.PI / 2).round()
                         }
-                        else if (move.charAt(0) === "U" || move.charAt(0) === "y") {
+                        else if (move.charAt(0) === "U" || move.charAt(0) === "y" || move.charAt(0) === "u") {
                             vector1.applyAxisAngle(new Vector3(0,1,0), dir * Math.PI / 2).round()
                         }
-                        else if (move.charAt(0) === "D") {
+                        else if (move.charAt(0) === "D" || move.charAt(0) === "d") {
                             vector1.applyAxisAngle(new Vector3(0,-1,0), dir * Math.PI / 2).round()
                         }
-                        else if (move.charAt(0) === "F" || move.charAt(0) === "z") {
+                        else if (move.charAt(0) === "F" || move.charAt(0) === "z" || move.charAt(0) === "f") {
                             vector1.applyAxisAngle(new Vector3(0,0,1), dir * Math.PI / 2).round()
                         }
-                        else if (move.charAt(0) === "B") {
+                        else if (move.charAt(0) === "B" || move.charAt(0) === "b") {
                             vector1.applyAxisAngle(new Vector3(0,0,-1), dir * Math.PI / 2).round()
                         }
                         new_i = vector1.getComponent(0) + 1
@@ -170,24 +183,48 @@ function getMoveInfo(move) {
             x = [2]
             rotatingAround = "x"
             break;
+        case "r":
+            x = [1,2]
+            rotatingAround = "x"
+            break;
         case "L":
             x = [0]
+            rotatingAround = "x"
+            break;
+        case "l":
+            x = [0,1]
             rotatingAround = "x"
             break;
         case "U":
             y = [2]
             rotatingAround = "y"
             break;
+        case "u":
+            y = [1,2]
+            rotatingAround = "y"
+            break;
         case "D":
             y = [0]
+            rotatingAround = "y"
+            break;
+        case "d":
+            y = [0,1]
             rotatingAround = "y"
             break;
         case "F":
             z = [2]
             rotatingAround = "z"
             break;
+        case "f":
+            z = [1,2]
+            rotatingAround = "z"
+            break;
         case "B":
             z = [0]
+            rotatingAround = "z"
+            break;
+        case "b":
+            z = [0,1]
             rotatingAround = "z"
             break;
         case "x":
