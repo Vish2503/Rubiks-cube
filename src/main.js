@@ -18,21 +18,20 @@ function main() {
     const string = `U L2 D' B2 U' R2 B2 F2 D' F2 L2 R2 F R2 D L2 R2 B' L' D' R F' x2 y D' R u D R' y' D' R D R' y D r' E' L z2 U y l D R' z' R' x z' r' R2 U2 z D R2 D2 R' l' z M D2 M' z2 y R z' M z R' z' r' L' z D R' E R U' u' R E' R' u R' E' R E2 R E R' R2 E E' r2 E M2 E'`
     const moves = string.split(" ")
     let i = 0;
-    // document.addEventListener('click', async () => {
-    //     while (i < moves.length) {
-    //         await move(moves[i])
-    //         console.log(moves[i]);
-    //         i++
-    //     }
-    // }, {once:true})
     document.addEventListener('click', async () => {
-        if (!currentlyAnimating) {
+        while (i < moves.length) {
             await move(moves[i])
             i++
         }
-    })
+    }, {once:true})
+    // document.addEventListener('click', async () => {
+    //     if (!currentlyAnimating) {
+    //         await move(moves[i])
+    //         i++
+    //     }
+    // })
     document.addEventListener("keydown", () => {
-        getFaces()
+        let faces = getFaces()
     })
 }
 
@@ -82,7 +81,7 @@ function move(move) {
         const oldRotation = new Euler().copy(rubiksCube.pieces[i_][j_][k_].cube.rotation)
         rubiksCube.pieces[i_][j_][k_].tick = (delta) => {
 
-            const speed = delta * Math.PI * 1.2
+            const speed = delta * Math.PI * 2
             
             if (move.charAt(0) === "x" || move.charAt(0) === "r") {
                 rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(1,0,0), dir * speed)
@@ -194,6 +193,9 @@ function getMoveInfo(move) {
     else if (move.charAt(1) === "3") {
         dir = -3
     }
+    else if (move.charAt(1) === "3") {
+        dir = -3
+    }
     switch (move.charAt(0)) {
         case "R":
             x = [2]
@@ -275,17 +277,74 @@ function getFaces() {
     let intersects
     const raycaster = new Raycaster()
     let i, j, k, a, b, c
-    i = 1
+
+    // U face
+    j = 1
     for (k = -1; k <= 1; k++) {
-        for (j = -1; j <= 1; j++) {
+        for (i = -1; i <= 1; i++) {
             [a,b,c] = rubiksCube.indices[i+1][j+1][k+1]
             raycaster.set(new Vector3(i,j,k), new Vector3(0,1,0))
             intersects = raycaster.intersectObjects(rubiksCube.pieces[a][b][c].faces)
             faces += getColor(intersects[0].object.material.color.getHex())
-            console.log(raycaster.ray);
         }
     }
-    console.log(faces);
+
+    // R face
+    i = 1
+    for (j = 1; j >= -1; j--) {
+        for (k = 1; k >= -1; k--) {
+            [a,b,c] = rubiksCube.indices[i+1][j+1][k+1]
+            raycaster.set(new Vector3(i,j,k), new Vector3(1,0,0))
+            intersects = raycaster.intersectObjects(rubiksCube.pieces[a][b][c].faces)
+            faces += getColor(intersects[0].object.material.color.getHex())
+        }
+    }
+
+    // F face
+    k = 1
+    for (j = 1; j >= -1; j--) {
+        for (i = -1; i <= 1; i++) {
+            [a,b,c] = rubiksCube.indices[i+1][j+1][k+1]
+            raycaster.set(new Vector3(i,j,k), new Vector3(0,0,1))
+            intersects = raycaster.intersectObjects(rubiksCube.pieces[a][b][c].faces)
+            faces += getColor(intersects[0].object.material.color.getHex())
+        }
+    }
+
+    // D face
+    j = -1
+    for (k = 1; k >= -1; k--) {
+        for (i = -1; i <= 1; i++) {
+            [a,b,c] = rubiksCube.indices[i+1][j+1][k+1]
+            raycaster.set(new Vector3(i,j,k), new Vector3(0,-1,0))
+            intersects = raycaster.intersectObjects(rubiksCube.pieces[a][b][c].faces)
+            faces += getColor(intersects[0].object.material.color.getHex())
+        }
+    }
+
+    // L face
+    i = -1
+    for (j = 1; j >= -1; j--) {
+        for (k = -1; k <= 1; k++) {
+            [a,b,c] = rubiksCube.indices[i+1][j+1][k+1]
+            raycaster.set(new Vector3(i,j,k), new Vector3(-1,0,0))
+            intersects = raycaster.intersectObjects(rubiksCube.pieces[a][b][c].faces)
+            faces += getColor(intersects[0].object.material.color.getHex())
+        }
+    }
+
+    // B-face
+    k = -1
+    for (j = 1; j >= -1; j--) {
+        for (i = 1; i >= -1; i--) {
+            [a,b,c] = rubiksCube.indices[i+1][j+1][k+1]
+            raycaster.set(new Vector3(i,j,k), new Vector3(0,0,-1))
+            intersects = raycaster.intersectObjects(rubiksCube.pieces[a][b][c].faces)
+            faces += getColor(intersects[0].object.material.color.getHex())
+        }
+    }
+
+    return faces;
 }
 
 function getColor(color) {
