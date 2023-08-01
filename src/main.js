@@ -1,24 +1,29 @@
 import { World } from './World/World.js';
 import { Rubikscube } from './World/components/Rubikscube.js';  
-import { Euler, Raycaster, Vector3 } from 'three';  
+import { Euler, Raycaster, Vector2, Vector3 } from 'three';  
 
 const container = document.querySelector('#scene-container')
 
 const world = new World(container)
 
 const rubiksCube = new Rubikscube()
-rubiksCube.addToScene(world.scene)
+rubiksCube.addToScene(world.scene) 
 
 let currentlyAnimating = false
 
 function main() {
 
     world.start()
-    
+
     const string = `U L2 D' B2 U' R2 B2 F2 D' F2 L2 R2 F R2 D L2 R2 B' L' D' R F' x2 y D' R u D R' y' D' R D R' y D r' E' L z2 U y l D R' z' R' x z' r' R2 U2 z D R2 D2 R' l' z M D2 M' z2 y R z' M z R' z' r' L' z D R' E R U' u' R E' R' u R' E' R E2 R E R' R2 E E' r2 E M2 E'`
     const moves = string.split(" ")
     let i = 0;
-    document.addEventListener('click', async () => {
+    container.addEventListener('click', async () => {
+        rubiksCube.group.rotation.x = 0
+        rubiksCube.group.rotation.y = 0
+        rubiksCube.group.rotation.z = 0
+        rubiksCube.group.position.y = 0
+        world.loop.updatables.splice(world.loop.updatables.indexOf(rubiksCube.group))
         while (i < moves.length) {
             await move(moves[i])
             i++
@@ -30,13 +35,17 @@ function main() {
     //         i++
     //     }
     // })
-    document.addEventListener("keydown", () => {
-        let faces = getFaces()
+    document.addEventListener('DOMContentLoaded', () => {
+        world.loop.updatables.push(rubiksCube.group)
+        rubiksCube.group.tick = (delta) => {
+            rubiksCube.group.rotation.y += - delta
+            rubiksCube.group.position.y = Math.sin(rubiksCube.group.rotation.y) / 2
+
+        }
     })
 }
 
-
-
+// this function does a move on the rubiks cube when called, both the animation and moving the cube around.
 function move(move) {
 
     // using a promise to ensure that we will wait for the whole animation to finish and then move on to other moves
@@ -135,7 +144,7 @@ function move(move) {
                             previous[i][j][k] = []
                             previous[i][j][k] = rubiksCube.indices[i][j][k]
                             // also using this loop to remove the piece from being attached to the centerpiece
-                            world.scene.attach(rubiksCube.pieces[i][j][k].cube)
+                            rubiksCube.group.attach(rubiksCube.pieces[i][j][k].cube)
                         }
                     }
                 }
@@ -272,6 +281,35 @@ function getMoveInfo(move) {
     return [x, y, z, dir, rotatingAround]
 }
 
+// this function returns all 6 faces in a string following the representation expected by the kociemba two phase solver. this was chosen simply for convention, so I do not have to change between by representation and kociemba representation everytime I try to use it
+/*
+ - https://github.com/hkociemba/RubiksCube-TwophaseSolver
+A solved string is of the form: 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB'
+The names of the facelet positions of the cube
+             |************|
+             |*U1**U2**U3*|
+             |************|
+             |*U4**U5**U6*|
+             |************|
+             |*U7**U8**U9*|
+             |************|
+|************|************|************|************|
+|*L1**L2**L3*|*F1**F2**F3*|*R1**R2**R3*|*B1**B2**B3*|
+|************|************|************|************|
+|*L4**L5**L6*|*F4**F5**F6*|*R4**R5**R6*|*B4**B5**B6*|
+|************|************|************|************|
+|*L7**L8**L9*|*F7**F8**F9*|*R7**R8**R9*|*B7**B8**B9*|
+|************|************|************|************|
+             |************|
+             |*D1**D2**D3*|
+             |************|
+             |*D4**D5**D6*|
+             |************|
+             |*D7**D8**D9*|
+             |************|
+A cube definition string "UBL..." means for example: In position U1 we have the U-color, in position U2 we have the
+B-color, in position U3 we have the L color etc.
+*/
 function getFaces() {
     let faces = ""
     let intersects
@@ -347,6 +385,15 @@ function getFaces() {
     return faces;
 }
 
+// simply returns the string representation of the color, the string is the face on which this color is the center of
+/*
+    White => U
+    Green => F
+    Red => R
+    Blue => B
+    Orange => L
+    Yellow => D
+*/
 function getColor(color) {
     switch (color) {
         case 0xffffff:
@@ -362,7 +409,7 @@ function getColor(color) {
         case 0xffff00:
             return "D"
         default:
-            return null;
+            return "E";
     }
 }
 

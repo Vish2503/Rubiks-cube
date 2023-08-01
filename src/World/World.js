@@ -20,9 +20,8 @@ class World {
         this.loop.updatables.push(this.controls)
 
         
-        this.ambientLight = createLights()[0]
-        this.light = createLights()[1]
-        this.scene.add(this.ambientLight, this.light)
+        this.ambientLight = createLights()
+        this.scene.add(this.ambientLight)
         
 
         this.resizer = new Resizer(container, this.camera, this.renderer);
