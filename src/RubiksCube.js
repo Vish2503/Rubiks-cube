@@ -7,6 +7,11 @@ let world;
 let rubiksCube;
 
 let currentlyAnimating = false
+let AnimationSpeed = Math.PI * 2
+
+function setAnimationSpeed(speed) {
+    AnimationSpeed = speed;
+}
 
 function createWorld(container) {
     world = new World(container)
@@ -61,7 +66,7 @@ function move(move) {
         const oldRotation = new Euler().copy(rubiksCube.pieces[i_][j_][k_].cube.rotation)
         rubiksCube.pieces[i_][j_][k_].tick = (delta) => {
 
-            const speed = delta * Math.PI * 2
+            let speed = delta * AnimationSpeed
             
             if (move.charAt(0) === "x" || move.charAt(0) === "r") {
                 rubiksCube.pieces[i_][j_][k_].cube.rotateOnWorldAxis(new Vector3(1,0,0), dir * speed)
@@ -281,7 +286,7 @@ The names of the facelet positions of the cube
 A cube definition string "UBL..." means for example: In position U1 we have the U-color, in position U2 we have the
 B-color, in position U3 we have the L color etc.
 */
-function getFaces() {
+function getCubeString() {
     let faces = ""
     let intersects
     const raycaster = new Raycaster()
@@ -384,4 +389,150 @@ function getColor(color) {
     }
 }
 
-export { createWorld, world, rubiksCube, currentlyAnimating, move, getFaces }
+// this function stores the orientation of the pieces in an object from a given cubestring, basically manually done, couldn't come up with anything better
+function getNotation(cubestring = getCubeString()) {
+    let notation = {
+        UBL: cubestring[0] + cubestring[47] + cubestring[36],
+        UB: cubestring[1] + cubestring[46],
+        URB: cubestring[2]  + cubestring[11] + cubestring[45],
+        UL: cubestring[3] + cubestring[37],
+        U: cubestring[4],
+        UR: cubestring[5] + cubestring[10],
+        ULF: cubestring[6] + cubestring[38] + cubestring[18],
+        UF: cubestring[7] + cubestring[19],
+        UFR: cubestring[8] + cubestring[20] + cubestring[9],
+        RUF: cubestring[9] + cubestring[8] + cubestring[20],
+        RU: cubestring[10] + cubestring[5],
+        RBU: cubestring[11] + cubestring[45] + cubestring[2],
+        RF: cubestring[12] + cubestring[23],
+        R: cubestring[13],
+        RB: cubestring[14] + cubestring[48],
+        RFD: cubestring[15] + cubestring[26] + cubestring[29],
+        RD: cubestring[16] + cubestring[32], 
+        RDB: cubestring[17] + cubestring[35] + cubestring[51],
+        FUL: cubestring[18] + cubestring[6] + cubestring[38],
+        FU: cubestring[19] + cubestring[7],
+        FRU: cubestring[20] + cubestring[9] + cubestring[8],
+        FL: cubestring[21] + cubestring[41],
+        F: cubestring[22],
+        FR: cubestring[23] + cubestring[12],
+        FLD: cubestring[24] + cubestring[44] + cubestring[27],
+        FD: cubestring[25] + cubestring[28],
+        FDR: cubestring[26] + cubestring[29] + cubestring[15],
+        DFL: cubestring[27] + cubestring[24] + cubestring[44],
+        DF: cubestring[28] + cubestring[25],
+        DRF: cubestring[29] + cubestring[15] + cubestring[26],
+        DL: cubestring[30] + cubestring[43],
+        D: cubestring[31],
+        DR: cubestring[32] + cubestring[16],
+        DLB: cubestring[33] + cubestring[42] + cubestring[53],
+        DB: cubestring[34] + cubestring[52],
+        DBR: cubestring[35] + cubestring[51] + cubestring[17],
+        LUB: cubestring[36] + cubestring[0] + cubestring[47],
+        LU: cubestring[37] + cubestring[3],
+        LFU: cubestring[38] + cubestring[18] + cubestring[6],
+        LB: cubestring[39] + cubestring[50],
+        L: cubestring[40],
+        LF: cubestring[41] + cubestring[21],
+        LBD: cubestring[42] + cubestring[53] + cubestring[33],
+        LD: cubestring[43] + cubestring[30],
+        LDF: cubestring[44] + cubestring[27] + cubestring[24],
+        BUR: cubestring[45] + cubestring[2] + cubestring[11],
+        BU: cubestring[46] + cubestring[1],
+        BLU: cubestring[47] + cubestring[36] + cubestring[0],
+        BR: cubestring[48] + cubestring[14],
+        B: cubestring[49],
+        BL: cubestring[50] + cubestring[39],
+        BRD: cubestring[51] + cubestring[17] + cubestring[35],
+        BD: cubestring[52] + cubestring[34],
+        BDL: cubestring[53] + cubestring[33] + cubestring[42]
+    }
+
+    return notation
+}
+
+const notationPositions = {
+    "UBL": "-1,1,-1",
+    "UB": "0,1,-1",
+    "URB": "1,1,-1",
+    "UL": "-1,1,0",
+    "U": "0,1,0",
+    "UR": "1,1,0",
+    "ULF": "-1,1,1",
+    "UF": "0,1,1",
+    "UFR": "1,1,1",
+    "RUF": "1,1,1",
+    "RU": "1,1,0",
+    "RBU": "1,1,-1",
+    "RF": "1,0,1",
+    "R": "1,0,0",
+    "RB": "1,0,-1",
+    "RFD": "1,-1,1",
+    "RD": "1,-1,0",
+    "RDB": "1,-1,-1",
+    "FUL": "-1,1,1",
+    "FU": "0,1,1",
+    "FRU": "1,1,1",
+    "FL": "-1,0,1",
+    "F": "0,0,1",
+    "FR": "1,0,1",
+    "FLD": "-1,-1,1",
+    "FD": "0,-1,1",
+    "FDR": "1,-1,1",
+    "DFL": "-1,-1,1",
+    "DF": "0,-1,1",
+    "DRF": "1,-1,1",
+    "DL": "-1,-1,0",
+    "D": "0,-1,0",
+    "DR": "1,-1,0",
+    "DLB": "-1,-1,-1",
+    "DB": "0,-1,-1",
+    "DBR": "1,-1,-1",
+    "LUB": "-1,1,-1",
+    "LU": "-1,1,0",
+    "LFU": "-1,1,1",
+    "LB": "-1,0,-1",
+    "L": "-1,0,0",
+    "LF": "-1,0,1",
+    "LBD": "-1,-1,-1",
+    "LD": "-1,-1,0",
+    "LDF": "-1,-1,1",
+    "BUR": "1,1,-1",
+    "BU": "0,1,-1",
+    "BLU": "-1,1,-1",
+    "BR": "1,0,-1",
+    "B": "0,0,-1",
+    "BL": "-1,0,-1",
+    "BRD": "1,-1,-1",
+    "BD": "0,-1,-1",
+    "BDL": "-1,-1,-1"
+}
+
+
+const scrambleMoves = ["R", "L", "U", "D", "F", "B"]
+const scrambleDirs = ["", "'", "2"]
+// generates a random 25 move scramble using moves in scrambleMoves and directions in scrambleDirs such that no three consecutive moves have any moves in common (so as to not have something like R, R' or R L R', etc)
+function generateScramble() {
+
+    function getRandomMove() {
+        return scrambleMoves[Math.floor(Math.random() * scrambleMoves.length)] + scrambleDirs[Math.floor(Math.random() * scrambleDirs.length)]
+    }
+    let scramble = []
+    // generating the first two moves so that the second move is not the same as first move
+    scramble.push(getRandomMove())
+    scramble.push(getRandomMove())
+    while (scramble[0].charAt(0) === scramble[1].charAt(1)) {
+        scramble[1] = getRandomMove
+    }
+
+    for (let i = 2; i < 25; i++) {
+        let move = getRandomMove()
+        while (scramble[i - 1].charAt(0) === move.charAt(0) || scramble[i - 2].charAt(0) === move.charAt(0)) {
+            move = getRandomMove()
+        }
+        scramble.push(move)
+    }
+
+    return scramble
+}
+export { createWorld, world, rubiksCube, currentlyAnimating, move, getCubeString, getNotation, notationPositions, generateScramble, setAnimationSpeed }

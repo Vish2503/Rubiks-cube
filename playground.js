@@ -1,5 +1,5 @@
 import { Raycaster, Vector2 } from "three";
-import { createWorld, getFaces, move, rubiksCube, world } from "./src/RubiksCube"
+import { createWorld, move, rubiksCube, world } from "./src/RubiksCube"
 
 const container = document.querySelector("#scene-container")
 createWorld(container)
