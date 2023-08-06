@@ -10,6 +10,10 @@ let currentlyAnimating = false
 let AnimationSpeed = Math.PI * 2
 
 function setAnimationSpeed(speed) {
+    const defaultSpeed = Math.PI * 2;
+    if (!speed) {
+        AnimationSpeed = defaultSpeed
+    } 
     AnimationSpeed = speed;
 }
 
@@ -535,4 +539,15 @@ function generateScramble() {
 
     return scramble
 }
-export { createWorld, world, rubiksCube, currentlyAnimating, move, getCubeString, getNotation, notationPositions, generateScramble, setAnimationSpeed }
+
+let initialized = false;
+function solveTwoPhase() {
+    if (!initialized) {
+        Cube.initSolver()
+        initialized = true
+    }
+    let cube = new Cube()
+    cube = Cube.fromString(getCubeString())
+    return cube.solve().split(" ")
+}
+export { createWorld, world, rubiksCube, currentlyAnimating, move, getCubeString, getNotation, notationPositions, generateScramble, setAnimationSpeed, solveTwoPhase }
