@@ -1,4 +1,4 @@
-import { world, rubiksCube, move, createWorld, generateScramble, getCubeString, solveTwoPhase } from './src/RubiksCube';
+import { world, rubiksCube, move, createWorld, generateScramble, getCubeString, solveTwoPhase, reverseMove } from './src/RubiksCube';
 
 const container = document.querySelector('#scene-container')
 createWorld(container)
@@ -8,34 +8,47 @@ const string = `U L2 D' B2 U' R2 B2 F2 D' F2 L2 R2 F R2 D L2 R2 B' L' D' R F' x2
 const moves = string.split(" ")
 let scramble = generateScramble()
 let i = 0;
-container.addEventListener('click', async () => {
-    world.loop.updatables.splice(world.loop.updatables.indexOf(rubiksCube.group))
-    rubiksCube.group.rotation.y = 0
-    rubiksCube.group.position.y = 0
-    console.log(scramble.join(" "));
-    while (i < scramble.length) {
-        await move(scramble[i])
-        i++
-    }
-    let solution = solveTwoPhase()
-    console.log(solution.join(" "));
-    i = 0
-    while (i < solution.length) {
-        await move(solution[i])
-        i++
-    }
-})
-// document.addEventListener('click', async () => {
-//     if (!currentlyAnimating) {
-//         await move(moves[i])
-//         i++
-//     }
-// })
+
 document.addEventListener('DOMContentLoaded', () => {
     world.loop.updatables.push(rubiksCube.group)
     rubiksCube.group.tick = (delta) => {
         rubiksCube.group.rotation.y += - delta
         rubiksCube.group.position.y = Math.sin(rubiksCube.group.rotation.y) / 2
-
     }
 })
+
+let playpause = document.querySelector("#playpause")
+let next = document.querySelector("#next")
+let previous = document.querySelector("#previous")
+
+let playing = false
+scramble = generateScramble()
+async function playAllMoves() {
+    playing = !playing
+    while (playing && moves[i]) {
+        await move(moves[i])
+        i++
+    }
+}
+
+async function playNextMove() {
+    next.removeEventListener("click", playNextMove)
+    if (moves[i]) {
+        await move(moves[i])
+        i++
+    }
+    next.addEventListener("click", playNextMove)
+}
+
+async function playPreviousMove() {
+    previous.removeEventListener("click", playPreviousMove)
+    if (i) {
+        i--
+        await move(reverseMove(moves[i]))
+    }
+    previous.addEventListener("click", playPreviousMove)
+}
+
+playpause.addEventListener("click", playAllMoves)
+next.addEventListener("click", playNextMove)
+previous.addEventListener("click", playPreviousMove)

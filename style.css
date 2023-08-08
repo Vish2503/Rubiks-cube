@@ -10,7 +10,7 @@ body {
     overflow: hidden;
 }
 
-body #scene-container {
+#scene-container {
     width: 100vw;
     height: 80%;
     display: inline-block;

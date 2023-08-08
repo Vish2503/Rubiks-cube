@@ -8,14 +8,14 @@ let firstNotation
 
 let pieces = []
 
-setTimeout(async () => {
+document.addEventListener("DOMContentLoaded", async () => {
     setAnimationSpeed(1000)
     await move("x2")
     await move("y")
     setAnimationSpeed()
     firstNotation = getNotation()
     Object.keys(firstNotation).forEach(element => pieces.push(getPositionByNotation(element)))
-}, 1000)
+})
 
 // document.addEventListener("keyup", async () => {
 //     // let scramble = generateScramble()
@@ -41,10 +41,15 @@ function introduction() {
     infoHeader.innerHTML = "INTRODUCTION"
     infoPara.innerHTML = "This is an introduction to the rubiks cube!"
     function first() {
-        // previous.removeEventListener("click", second)
-        // previous.addEventListener("click", third)
+        // if coming to this one by using next, we need to remove the previous to previous function call
+        previous.removeEventListener("click", sixth)
+        // if coming to this one by using previous we need to remove this function call
+        previous.removeEventListener("click", first)
+        // now add the previous one which needs to be gone to on click
+        previous.addEventListener("click", seventh)
         revertHighlight(pieces)
         pieces.length = 0;
+        // this will push whatever is in the top layer to be highlighted
         (Object.keys(firstNotation).filter(key => (key.includes("U")))).forEach(element => {
             pieces.push(getPositionByNotation(element))
         })
@@ -55,10 +60,12 @@ function introduction() {
         next.addEventListener("click", second)
     }
     function second() {
-        // previous.removeEventListener("click", third)
-        // previous.addEventListener("click", first)
+        previous.removeEventListener("click", seventh)
+        previous.removeEventListener("click", second)
+        previous.addEventListener("click", first)
         revertHighlight(pieces)
         pieces.length = 0;
+        // this will push whatever is in the middle layer to be highlighted
         (Object.keys(firstNotation).filter(key => !(key.includes("U") || key.includes("D")))).forEach(element => {
             pieces.push(getPositionByNotation(element))
         })
@@ -69,10 +76,12 @@ function introduction() {
         next.addEventListener("click", third)
     }
     function third() {
-        // previous.removeEventListener("click", first)
-        // previous.addEventListener("click", second)
+        previous.removeEventListener("click", first)
+        previous.removeEventListener("click", third)
+        previous.addEventListener("click", second)
         revertHighlight(pieces)
         pieces.length = 0;
+        // this will push whatever is in the bottom layer to be highlighted
         (Object.keys(firstNotation).filter(key => (key.includes("D")))).forEach(element => {
             pieces.push(getPositionByNotation(element))
         })
@@ -83,16 +92,65 @@ function introduction() {
         next.addEventListener("click", fourth)
     }
     function fourth() {
-        // previous.removeEventListener("click", first)
-        // previous.addEventListener("click", second)
+        previous.removeEventListener("click", second)
+        previous.removeEventListener("click", fourth)
+        previous.addEventListener("click", third)
         revertHighlight(pieces)
         infoHeader.innerHTML = "FACES"
         infoPara.innerHTML = "There are six faces on a Rubik's Cube. Each colored side of the cube makes up a single face."
         next.removeEventListener("click", fourth)
+        next.addEventListener("click", fifth)
+    }
+    function fifth() {
+        previous.removeEventListener("click", third)
+        previous.removeEventListener("click", fifth)
+        previous.addEventListener("click", fourth)
+        revertHighlight(pieces)
+        pieces.length = 0;
+        // this will push centers to pieces for highighting
+        (Object.keys(firstNotation).filter(key => (key.length === 1))).forEach(element => {
+            pieces.push(getPositionByNotation(element))
+        })
+        highlightPieces(pieces)
+        infoHeader.innerHTML = "CENTERS"
+        infoPara.innerHTML = "These pieces have one color. There are six of them on a cube, one for each side. Center pieces are fixed to the core of the cube and do not move, hence we solve the rest of the face with respect to the center piece. Note that the following colors will always stay opposite to each other in a cube: White & Yellow, Blue & Green and Red & Orange"
+        next.removeEventListener("click", fifth)
+        next.addEventListener("click", sixth)
+    }
+    function sixth() {
+        previous.removeEventListener("click", fourth)
+        previous.removeEventListener("click", sixth)
+        previous.addEventListener("click", fifth)
+        revertHighlight(pieces)
+        pieces.length = 0;
+        // this will push centers to pieces for highighting
+        (Object.keys(firstNotation).filter(key => (key.length === 2))).forEach(element => {
+            pieces.push(getPositionByNotation(element))
+        })
+        highlightPieces(pieces)
+        infoHeader.innerHTML = "EDGES"
+        infoPara.innerHTML = "These pieces have two colors on them. There are 12 edge pieces on a cube."
+        next.removeEventListener("click", sixth)
+        next.addEventListener("click", seventh)
+    }
+    function seventh() {
+        previous.removeEventListener("click", fifth)
+        previous.removeEventListener("click", seventh)
+        previous.addEventListener("click", sixth)
+        revertHighlight(pieces)
+        pieces.length = 0;
+        // this will push centers to pieces for highighting
+        (Object.keys(firstNotation).filter(key => (key.length === 3))).forEach(element => {
+            pieces.push(getPositionByNotation(element))
+        })
+        highlightPieces(pieces)
+        infoHeader.innerHTML = "CORNERS"
+        infoPara.innerHTML = "These pieces have three colors on them. There are 8 corner pieces on a cube."
+        next.removeEventListener("click", seventh)
         next.addEventListener("click", first)
     }
     next.addEventListener("click", first)
-    // previous.addEventListener("click", third)
+    previous.addEventListener("click", seventh)
 
     document.addEventListener('keyup', event => {
         if (event.key == "ArrowRight") {

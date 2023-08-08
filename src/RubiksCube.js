@@ -169,22 +169,21 @@ function getMoveInfo(move) {
     let x = [0,1,2]
     let y = [0,1,2]
     let z = [0,1,2]
-    let dir
+    let dir = -1
     let rotatingAround
     if (!move.charAt(1)) {
         dir = -1
-    } else if (move.charAt(1) === "'") {
-        dir = 1
-    }
-    else if (move.charAt(1) === "2") {
+    } else if (move.charAt(1) === "2") {
         dir = -2
     }
     else if (move.charAt(1) === "3") {
         dir = -3
     }
-    else if (move.charAt(1) === "3") {
-        dir = -3
-    }
+
+    if (move.charAt(move.length - 1) === "'") {
+        dir *= -1
+    } 
+    
     switch (move.charAt(0)) {
         case "R":
             x = [2]
@@ -540,14 +539,25 @@ function generateScramble() {
     return scramble
 }
 
-let initialized = false;
 function solveTwoPhase() {
-    if (!initialized) {
+    try {
+        let cube = new Cube()
+        cube = Cube.fromString(getCubeString())
+        return cube.solve().split(" ")
+    } catch (error) {
         Cube.initSolver()
-        initialized = true
+        let cube = new Cube()
+        cube = Cube.fromString(getCubeString())
+        return cube.solve().split(" ")
     }
-    let cube = new Cube()
-    cube = Cube.fromString(getCubeString())
-    return cube.solve().split(" ")
 }
-export { createWorld, world, rubiksCube, currentlyAnimating, move, getCubeString, getNotation, notationPositions, generateScramble, setAnimationSpeed, solveTwoPhase }
+
+function reverseMove(move) {
+    if (move.charAt(move.length - 1) === "'") {
+        return move.slice(0,-1)
+    } else {
+        return move += "'"
+    }
+}
+
+export { createWorld, world, rubiksCube, currentlyAnimating, move, getCubeString, getNotation, notationPositions, generateScramble, setAnimationSpeed, solveTwoPhase, reverseMove }
