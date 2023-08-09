@@ -13,6 +13,7 @@ function setAnimationSpeed(speed) {
     const defaultSpeed = Math.PI * 2;
     if (!speed) {
         AnimationSpeed = defaultSpeed
+        return
     } 
     AnimationSpeed = speed;
 }
@@ -26,12 +27,24 @@ function createWorld(container) {
 }
 
 // this function does a move on the rubiks cube when called, both the animation and moving the cube around.
+const allowedMoves = [
+    "R", "L", "U", "D", "F", "B", "M", "E", "S", "x", "y", "z", "r", "l", "u", "d", "f", "b", 
+    "R2", "L2", "U2", "D2", "F2", "B2", "M2", "E2", "S2", "x2", "y2", "z2", "r2", "l2", "u2", "d2", "f2", "b2", 
+    "R3", "L3", "U3", "D3", "F3", "B3", "M3", "E3", "S3", "x3", "y3", "z3", "r3", "l3", "u3", "d3", "f3", "b3", 
+    "R'", "L'", "U'", "D'", "F'", "B'", "M'", "E'", "S'", "x'", "y'", "z'", "r'", "l'", "u'", "d'", "f'", "b'", 
+    "R2'", "L2'", "U2'", "D2'", "F2'", "B2'", "M2'", "E2'", "S2'", "x2'", "y2'", "z2'", "r2'", "l2'", "u2'", "d2'", "f2'", "b2'", 
+    "R3'", "L3'", "U3'", "D3'", "F3'", "B3'", "M3'", "E3'", "S3'", "x3'", "y3'", "z3'", "r3'", "l3'", "u3'", "d3'", "f3'", "b3'"
+    ]
 function move(move) {
 
     // using a promise to ensure that we will wait for the whole animation to finish and then move on to other moves
     return new Promise(resolve => {
         // this global variable will let us know whenever we are animating so we can stop other controls which may cause issues with the animation
         currentlyAnimating = true
+        if (!allowedMoves.includes(move)) {
+            resolve()
+            return
+        }
         const [x, y, z, dir, rotatingAround] = getMoveInfo(move)
 
         // i_, j_ and k_ will be the position of the center piece which will actually rotate and the other pieces on the face or cube will be attached to the centerpiece and move together
@@ -560,4 +573,4 @@ function reverseMove(move) {
     }
 }
 
-export { createWorld, world, rubiksCube, currentlyAnimating, move, getCubeString, getNotation, notationPositions, generateScramble, setAnimationSpeed, solveTwoPhase, reverseMove }
+export { createWorld, world, rubiksCube, currentlyAnimating, allowedMoves, move, getCubeString, getNotation, notationPositions, generateScramble, setAnimationSpeed, solveTwoPhase, reverseMove }
