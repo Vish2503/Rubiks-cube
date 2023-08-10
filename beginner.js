@@ -1,3 +1,4 @@
+import { Raycaster, Vector2 } from "three"
 import { createWorld, generateScramble, getCubeString, getNotation, move, notationPositions, rubiksCube, setAnimationSpeed, world } from "./src/RubiksCube"
 
 const container = document.querySelector("#scene-container")
@@ -8,14 +9,14 @@ let firstNotation
 
 let pieces = []
 
-document.addEventListener("DOMContentLoaded", async () => {
-    setAnimationSpeed(1000)
-    await move("x2")
-    await move("y")
-    setAnimationSpeed()
-    firstNotation = getNotation()
-    Object.keys(firstNotation).forEach(element => pieces.push(getPositionByNotation(element)))
-})
+// document.addEventListener("DOMContentLoaded", async () => {
+//     setAnimationSpeed(1000)
+//     await move("x2")
+//     await move("y")
+//     setAnimationSpeed()
+//     firstNotation = getNotation()
+//     Object.keys(firstNotation).forEach(element => pieces.push(getPositionByNotation(element)))
+// })
 
 // document.addEventListener("keyup", async () => {
 //     // let scramble = generateScramble()
@@ -351,18 +352,145 @@ function introduction() {
     }
     next.addEventListener("click", first)
 
-    document.addEventListener('keyup', event => {
+    function keyboardControls(event){
         if (event.key == "ArrowRight") {
             next.click()
         } else if (event.key == "ArrowLeft") {
             previous.click()
         }
+    }
+    document.addEventListener('keyup', keyboardControls)
+}
+
+let allFaces 
+let selectedFace
+async function getUserCube() {
+    await delay(1000)
+    firstNotation = getNotation()
+    Object.keys(firstNotation).forEach(element => pieces.push(getPositionByNotation(element)))
+    revertHighlight(pieces)
+    pieces.length = 0
+    const centers = ["U", "D", "F", "B", "R", "L"]
+    centers.forEach(element => {
+        pieces.push(getPositionByNotation(element))
     })
+    highlightPieces(pieces)
+
+    
+    const pointer = new Vector2()
+    const raycaster = new Raycaster()
+
+    
+    const whiteButton = document.querySelector("#whiteButton")
+    const redButton = document.querySelector("#redButton")
+    const greenButton = document.querySelector("#greenButton")
+    const yellowButton = document.querySelector("#yellowButton")
+    const orangeButton = document.querySelector("#orangeButton")
+    const blueButton = document.querySelector("#blueButton")
+    const finished = document.querySelector("#finished")
+
+    let selectedColor
+    function selectFace(event) {
+        pointer.x = -1 + 2 * (event.offsetX) / container.clientWidth;
+        pointer.y = 1 - 2 * (event.offsetY) / container.clientHeight;
+        raycaster.setFromCamera( pointer, world.camera );
+        try {
+            const intersects = raycaster.intersectObjects(allFaces);
+            if (selectedFace) {
+                selectedFace.material.color.set(0x555555)
+            }
+            selectedFace = intersects[0].object
+            if (selectedColor) {
+                selectedFace.material.color.set(selectedColor)
+                selectedFace = undefined
+            } else {
+                selectedFace.material.color.set(0x999999)
+            }
+        } catch (error) {}
+    }
+
+    whiteButton.addEventListener("click", () => {
+        if (!selectedColor) {
+            selectedColor = 0xFFFFFF
+        } else {
+            selectedColor = undefined
+        }
+        if (selectedFace) {
+            selectedFace.material.color.set(selectedColor)
+            selectedFace = undefined
+        }
+    })
+    redButton.addEventListener("click", () => {
+        if (!selectedColor) {
+            selectedColor = 0xFF0000
+        } else {
+            selectedColor = undefined
+        }
+        if (selectedFace) {
+            selectedFace.material.color.set(0xFF0000)
+            selectedFace = undefined
+        }
+    })
+    greenButton.addEventListener("click", () => {
+        if (!selectedColor) {
+            selectedColor = 0x00FF00
+        } else {
+            selectedColor = undefined
+        }
+        if (selectedFace) {
+            selectedFace.material.color.set(selectedColor)
+            selectedFace = undefined
+        }
+    })
+    orangeButton.addEventListener("click", () => {
+        if (!selectedColor) {
+            selectedColor = 0xFFA500
+        } else {
+            selectedColor = undefined
+        }
+        if (selectedFace) {
+            selectedFace.material.color.set(selectedColor)
+            selectedFace = undefined
+        }
+    })
+    blueButton.addEventListener("click", () => {
+        if (!selectedColor) {
+            selectedColor = 0x0000FF
+        } else {
+            selectedColor = undefined
+        }
+        if (selectedFace) {
+            selectedFace.material.color.set(selectedColor)
+            selectedFace = undefined
+        }
+    })
+    yellowButton.addEventListener("click", () => {
+        if (!selectedColor) {
+            selectedColor = 0xFFFF00
+        } else {
+            selectedColor = undefined
+        }
+        if (selectedFace) {
+            selectedFace.material.color.set(selectedColor)
+            selectedFace = undefined
+        }
+    })
+
+    window.addEventListener('click', selectFace);
+
+    function userFinished() {
+        let faces = getCubeString()
+        if(faces.includes("E")) {
+            console.log("not finished");
+        }
+    }
+    finished.addEventListener("click", userFinished)
 }
 
 let beforeHighlight = []
 function highlightPieces(pieces) {
     beforeHighlight = []
+    allFaces = []
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
             for (let k = 0; k < 3; k++) {
@@ -370,6 +498,7 @@ function highlightPieces(pieces) {
                     continue
                 } else {
                     for (let w = 0; w < 6; w++) {
+                        allFaces.push(rubiksCube.pieces[i][j][k].faces[w])
                         beforeHighlight.push(rubiksCube.pieces[i][j][k].faces[w].material.color.getHex())
                         rubiksCube.pieces[i][j][k].faces[w].material.color.set(0x555555)
                     }
@@ -410,4 +539,7 @@ function getPositionByNotation(value, notation = firstNotation) {
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
-introduction()
+
+
+// introduction()
+getUserCube()
