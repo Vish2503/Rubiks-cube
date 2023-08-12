@@ -1,5 +1,5 @@
 import { Raycaster, Vector2, Vector3 } from "three";
-import { createWorld, move, rubiksCube, setAnimationSpeed, world } from "./src/RubiksCube"
+import { createWorld, generateScramble, move, rubiksCube, setAnimationSpeed, solveTwoPhase, world } from "./src/RubiksCube"
 
 const container = document.querySelector("#scene-container")
 createWorld(container)
@@ -9,23 +9,47 @@ world.camera.position.set(5,4,5)
 
 const pointer = new Vector2()
 const raycaster = new Raycaster()
-let selectedFace
+let selectedFace = null
 let allFaces = []
-rubiksCube.pieces.flat(2).forEach(element => {
-    allFaces.push(...element.cube.children)
-})
+function addVisiblefaces(){
+    allFaces.length = 0
+    let intersects
+    const raycaster = new Raycaster()
+    let i, j, k, a, b, c
 
-// window.addEventListener( 'click', (event) => {
-//     pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-//     pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-//     raycaster.setFromCamera( pointer, world.camera );
+    // Up face
+    j = 1
+    for (k = -1; k <= 1; k++) {
+        for (i = -1; i <= 1; i++) {
+            [a,b,c] = rubiksCube.indices[i+1][j+1][k+1]
+            raycaster.set(new Vector3(i,j,k), new Vector3(0,1,0))
+            intersects = raycaster.intersectObjects(rubiksCube.pieces[a][b][c].faces)
+            allFaces.push(intersects[0].object)
+        }
+    }
 
-//     const intersects = raycaster.intersectObjects(allPieces);
-//     if (intersects.length) {
-//         selectedPiece = intersects[0].object
-//     }
-//     console.log(selectedPiece);
-// });
+    // Right face
+    i = 1
+    for (j = 1; j >= -1; j--) {
+        for (k = 1; k >= -1; k--) {
+            [a,b,c] = rubiksCube.indices[i+1][j+1][k+1]
+            raycaster.set(new Vector3(i,j,k), new Vector3(1,0,0))
+            intersects = raycaster.intersectObjects(rubiksCube.pieces[a][b][c].faces)
+            allFaces.push(intersects[0].object)
+        }
+    }
+
+    // Front face
+    k = 1
+    for (j = 1; j >= -1; j--) {
+        for (i = -1; i <= 1; i++) {
+            [a,b,c] = rubiksCube.indices[i+1][j+1][k+1]
+            raycaster.set(new Vector3(i,j,k), new Vector3(0,0,1))
+            intersects = raycaster.intersectObjects(rubiksCube.pieces[a][b][c].faces)
+            allFaces.push(intersects[0].object)
+        }
+    }
+}
 
 let xStart = null
 let yStart = null
@@ -35,20 +59,11 @@ let xDistance = null
 let yDistance = null
 let faceDirection = new Vector3()
 let piecePosition = new Vector3()
-
-// document.addEventListener("DOMContentLoaded", async () => {
-//     setAnimationSpeed(1000)
-//     await move("L")
-//     await move("R")
-//     await move("U")
-//     await move("M")
-//     await move("x")
-//     await move("z")
-//     setAnimationSpeed()
-// })
+let firstFaceDirectionWhenNoSelection = new Vector3()
+let secondFaceDirectionWhenNoSelection = new Vector3()
 
 function moveStart(event) {
-    console.log(event.type);
+    addVisiblefaces()
     if (event.type === "mousedown") {
         pointer.x = -1 + 2 * (event.offsetX) / world.renderer.domElement.clientWidth;
         pointer.y = 1 - 2 * (event.offsetY) / world.renderer.domElement.clientHeight;
@@ -68,8 +83,6 @@ function moveStart(event) {
         piecePosition.copy(selectedFace.parent.position.round())
         selectedFace.getWorldDirection(faceDirection)
         faceDirection.round()
-        console.log(faceDirection);
-        console.log(piecePosition);
     } catch (error) {}
 }
 function moveOngoing(event) {
@@ -85,18 +98,40 @@ function moveOngoing(event) {
         yEnd = event.touches[0].clientY
     }
 
+    if (!selectedFace) {
+        if (event.type === "mousemove") {
+            pointer.x = -1 + 2 * (event.offsetX) / world.renderer.domElement.clientWidth;
+            pointer.y = 1 - 2 * (event.offsetY) / world.renderer.domElement.clientHeight;
+        } else if (event.type === "touchmove") {
+            const {top, left, width, height} = world.renderer.domElement.getBoundingClientRect();
+            pointer.x = -1 + 2 * (event.touches[0].clientX - left) / width;
+            pointer.y = 1 - 2 * (event.touches[0].clientY - top) / height;
+        }
+        raycaster.setFromCamera( pointer, world.camera );
+        try {
+            const intersects = raycaster.intersectObjects(allFaces);
+            let faceOnRightNow = intersects[0].object
+            let directionOfFaceOnRightNow = new Vector3()
+            faceOnRightNow.getWorldDirection(directionOfFaceOnRightNow)
+            directionOfFaceOnRightNow.round()
+            let array = directionOfFaceOnRightNow.toArray()
+            directionOfFaceOnRightNow.set(Math.abs(array[0]), Math.abs(array[1]), Math.abs(array[2]))
+            if (firstFaceDirectionWhenNoSelection.equals(new Vector3(0,0,0))) {
+                firstFaceDirectionWhenNoSelection.copy(directionOfFaceOnRightNow)
+            }
+            if (secondFaceDirectionWhenNoSelection.equals(new Vector3(0,0,0)) && !firstFaceDirectionWhenNoSelection.equals(directionOfFaceOnRightNow)) {
+                secondFaceDirectionWhenNoSelection.copy(directionOfFaceOnRightNow)
+            }
+        } catch (error) {}
+    }
+
     xDistance = xEnd - xStart
     yDistance = - (yEnd - yStart)
-    console.log(event.type);
 }
 async function moveEnd(event) {
     removeListeners()
-    console.log(event.type);
-    console.log(xStart, xEnd, xDistance, yStart, yEnd, yDistance);
-    // console.log(xDistance, yDistance);
     
     let angle = (Math.atan(yDistance/xDistance) * 180) / Math.PI
-    console.log(angle);
     function getSide(faceDirection) {
         if (faceDirection.x) {
             return "Right"
@@ -295,6 +330,25 @@ async function moveEnd(event) {
         }
     }
 
+    if (!selectedFace) {
+        let firstSide = getSide(firstFaceDirectionWhenNoSelection)
+        let secondSide = getSide(secondFaceDirectionWhenNoSelection)
+        if (firstSide === "Front" && secondSide === "Up") {
+            await move("x")
+        } else if (firstSide === "Up" && secondSide === "Front") {
+            await move("x'")
+        } else if (firstSide === "Front" && secondSide === "Right") {
+            await move("y'")
+        } else if (firstSide === "Right" && secondSide === "Front") {
+            await move("y")
+        } else if (firstSide === "Right" && secondSide === "Up") {
+            await move("z'")
+        } else if (firstSide === "Up" && secondSide === "Right") {
+            await move("z")
+        }
+    }
+
+    selectedFace = null
     xStart = null
     yStart = null
     xEnd = null
@@ -303,9 +357,36 @@ async function moveEnd(event) {
     yDistance = 0
     faceDirection.set(0,0,0)
     piecePosition.set(0,0,0)
+    firstFaceDirectionWhenNoSelection.set(0,0,0)
+    secondFaceDirectionWhenNoSelection.set(0,0,0)
     addListeners()
 }
 
+async function scrambleCube() {
+    removeListeners()
+    let scramble = generateScramble()
+    let i = 0;
+    while (scramble[i]) {
+        await move(scramble[i])
+        i++
+    }
+    addListeners()
+}
+
+async function solveCube() {
+    removeListeners()
+    let solution = solveTwoPhase()
+    let i = 0;
+    while (solution[i]) {
+        await move(solution[i])
+        i++
+    }
+    addListeners()
+}
+ 
+
+let scrambleButton = document.querySelector("#scramble")
+let solveButton = document.querySelector("#solve")
 function addListeners(){
     window.addEventListener('touchstart', moveStart)
     window.addEventListener('mousedown', moveStart)
@@ -313,6 +394,8 @@ function addListeners(){
     window.addEventListener('mousemove', moveOngoing)
     window.addEventListener('touchend', moveEnd)
     window.addEventListener('mouseup', moveEnd)
+    scrambleButton.addEventListener("click", scrambleCube)
+    solveButton.addEventListener("click", solveCube)
 }
 function removeListeners(){
     window.removeEventListener('touchstart', moveStart)
@@ -321,6 +404,8 @@ function removeListeners(){
     window.removeEventListener('mousemove', moveOngoing)
     window.removeEventListener('touchend', moveEnd)
     window.removeEventListener('mouseup', moveEnd)
+    scrambleButton.removeEventListener("click", scrambleCube)
+    solveButton.removeEventListener("click", solveCube)
 }
 
 addListeners()
