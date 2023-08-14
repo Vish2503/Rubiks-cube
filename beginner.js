@@ -1,5 +1,5 @@
 import { Raycaster, Vector2 } from "three"
-import { createWorld, generateScramble, getCubeString, getNotation, move, notationPositions, rubiksCube, setAnimationSpeed, world } from "./src/RubiksCube"
+import { createWorld, generateScramble, getCubeString, getNotation, move, notationPositions, reverseMove, rubiksCube, setAnimationSpeed, shrinkMoveArray, world } from "./src/RubiksCube"
 
 const container = document.querySelector("#scene-container")
 createWorld(container)
@@ -33,7 +33,13 @@ let pieces = []
 // })
 
 
-function introduction() {
+async function introduction() {
+    setAnimationSpeed(1000)
+    await move("x2")
+    await move("y")
+    setAnimationSpeed()
+    firstNotation = getNotation()
+    Object.keys(firstNotation).forEach(element => pieces.push(getPositionByNotation(element)))
     const infoHeader = document.querySelector("#info-header")
     const infoPara = document.querySelector("#info-para")
     const next = document.querySelector("#next")
@@ -542,4 +548,102 @@ function delay(ms) {
 
 
 // introduction()
-getUserCube()
+// getUserCube()
+
+setAnimationSpeed(1000)
+let scramble = generateScramble()
+// let scramble = `F2 D2 U2 R' B' L2 R2 D2 U L' B2 U F2 D' B2 R2 D' U2 B' D' F' L U2 B' D'`.split(" ")
+console.log(scramble.join(" "));
+for (let i = 0; i < scramble.length; i++) {
+    await move(scramble[i])
+}
+await move("x2")
+// setAnimationSpeed(3)
+
+console.log(getCubeString());
+console.log(getNotation());
+let notation = getNotation()
+console.log("\nUR edge at:", getKeyByValue(notation, "UR"), "\nUB edge at:", getKeyByValue(notation, "UB"), "\nUL edge at:", getKeyByValue(notation, "UL"), "\nUF edge at:", getKeyByValue(notation, "UF"))
+
+let solution = []
+
+async function solveDaisy() {
+    // getting the white edges which are solved in this step
+    let currentNotation = getNotation()
+    let whiteEdges = Object.keys(currentNotation).filter(key => (key.length === 2 && key.charAt(0) === "U"))
+    
+    // removing the edges which are in the correct place already from the array
+    let i = whiteEdges.length
+    while (i--) {
+        if (getKeyByValue(currentNotation, whiteEdges[i]).charAt(0) === "U") {
+            whiteEdges.splice(i, 1)
+        }
+    }
+    
+    // base case for recursion, when all edges are in the correct position, we can return
+    if (whiteEdges.length === 0) {
+        return
+    }
+    
+    let firstEdgePosition = getKeyByValue(currentNotation, whiteEdges[0])
+
+    // if the edge is in the correct position but flipped
+    if (firstEdgePosition.charAt(1) === "U") {
+        while (!(firstEdgePosition === "RU")) {
+            solution.push("y")
+            await move("y")
+            currentNotation = getNotation()
+            firstEdgePosition = getKeyByValue(currentNotation, whiteEdges[0])
+        }
+        solution.push("R'")
+        solution.push("U")
+        solution.push("F'")
+        await move("R'")
+        await move("U")
+        await move("F'")
+
+        await solveDaisy()
+        return
+    }
+
+    // moving the cube until we find a white edge to move
+    while (!firstEdgePosition.includes("R")) {
+        solution.push("y")
+        await move("y")
+        currentNotation = getNotation()
+        firstEdgePosition = getKeyByValue(currentNotation, whiteEdges[0])
+    }
+    
+    // moving the up layer until theres no white piece on the right side which we will be switching so that we dont push it out of the layer
+    while (currentNotation["UR"].includes("U")) {
+        solution.push("U")
+        await move("U")
+        currentNotation = getNotation()
+    }
+
+    // doing R moves to get it in the top layer where we want it
+    while (!currentNotation["UR"].includes("U")) {
+        solution.push("R")
+        await move("R")
+        currentNotation = getNotation()
+    }
+
+    // now that one of the pieces is in the correct position we can again use this function to solve the rest of the edge pieces left
+    await solveDaisy()
+}
+
+await solveDaisy()
+console.log(solution.join(" "));
+solution = shrinkMoveArray(solution)
+console.log(solution.join(" "));
+
+for (let i = solution.length-1; i >= 0; i--) {
+    await move(reverseMove(solution[i]))
+}
+console.log(getCubeString());
+
+setAnimationSpeed(3)
+for (let index = 0; index < solution.length; index++) {
+    const element = solution[index];
+    await move(element)
+}

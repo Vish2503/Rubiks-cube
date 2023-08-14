@@ -537,7 +537,7 @@ function generateScramble() {
     // generating the first two moves so that the second move is not the same as first move
     scramble.push(getRandomMove())
     scramble.push(getRandomMove())
-    while (scramble[0].charAt(0) === scramble[1].charAt(1)) {
+    while (scramble[0].charAt(0) === scramble[1].charAt(0)) {
         scramble[1] = getRandomMove()
     }
 
@@ -573,4 +573,74 @@ function reverseMove(move) {
     }
 }
 
-export { createWorld, world, rubiksCube, currentlyAnimating, allowedMoves, move, getCubeString, getNotation, notationPositions, generateScramble, setAnimationSpeed, solveTwoPhase, reverseMove }
+function shrinkMoveArray(moveArray) {
+    let resultArray = []
+    let count = null
+    let totalCount = 0
+    while (true) {
+        for (let i = 0; i < moveArray.length; i++) {
+            if (count === null) {
+                switch (moveArray[i].charAt(1)) {
+                    case "":
+                        count = 1
+                        break;
+                    case "'":
+                        count = -1
+                        break;
+                    case "2":
+                        count = 2
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if (moveArray[i+1] && (moveArray[i].charAt(0) === moveArray[i+1].charAt(0))) {
+                totalCount++
+                switch (moveArray[i+1].charAt(1)) {
+                    case "":
+                        count++
+                        break;
+                    case "'":
+                        count--
+                        break;
+                    case "2":
+                        count += 2
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                let newMove = moveArray[i].charAt(0)
+                switch ((count + 4) % 4) {
+                    case 0:
+                        newMove = ""
+                        break;
+                    case 1:
+                        break;
+                    case 2:
+                        newMove += "2"
+                        break;
+                    case 3:
+                        newMove += "'"
+                        break;
+                    default:
+                        break;
+                }
+                if (newMove) {
+                    resultArray.push(newMove)
+                }
+                count = null
+            }
+        }
+        moveArray = resultArray.slice()
+        resultArray = []
+
+        if (totalCount === 0) {
+            return moveArray
+        }
+        totalCount = 0;
+    }
+
+}
+
+export { createWorld, world, rubiksCube, currentlyAnimating, allowedMoves, move, getCubeString, getNotation, notationPositions, generateScramble, setAnimationSpeed, solveTwoPhase, reverseMove, shrinkMoveArray }
