@@ -546,30 +546,34 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+// to help with different permutations of a string
+function sortString(str) {
+    return str.split("").sort().join("")
+}
 
 // introduction()
 // getUserCube()
 
-setAnimationSpeed(1000)
+setAnimationSpeed(10000)
 let scramble = generateScramble()
-// let scramble = `F2 D2 U2 R' B' L2 R2 D2 U L' B2 U F2 D' B2 R2 D' U2 B' D' F' L U2 B' D'`.split(" ")
-console.log(scramble.join(" "));
+// let scramble = `R' D' R D R' D' R D`.split(" ")
+console.log("scramble:", scramble.join(" "));
 for (let i = 0; i < scramble.length; i++) {
     await move(scramble[i])
 }
 await move("x2")
-// setAnimationSpeed(3)
-
-console.log(getCubeString());
-console.log(getNotation());
-let notation = getNotation()
-console.log("\nUR edge at:", getKeyByValue(notation, "UR"), "\nUB edge at:", getKeyByValue(notation, "UB"), "\nUL edge at:", getKeyByValue(notation, "UL"), "\nUF edge at:", getKeyByValue(notation, "UF"))
+// setAnimationSpeed()
 
 let solution = []
 
 async function solveDaisy() {
     // getting the white edges which are solved in this step
     let currentNotation = getNotation()
+    if (currentNotation["D"] !== "U") {    
+        solution.push("x2")
+        await move("x2")
+        currentNotation = getNotation()
+    }
     let whiteEdges = Object.keys(currentNotation).filter(key => (key.length === 2 && key.charAt(0) === "U"))
     
     // removing the edges which are in the correct place already from the array
@@ -632,18 +636,175 @@ async function solveDaisy() {
     await solveDaisy()
 }
 
+async function solveCross() {
+
+    let currentNotation = getNotation()
+    let whiteEdges = Object.keys(currentNotation).filter(key => (key.length === 2 && key.charAt(0) === "U"))
+
+    for (let i = whiteEdges.length - 1; i >= 0; i--) {
+        let EdgePosition = getKeyByValue(currentNotation, whiteEdges[i])
+        if (EdgePosition.charAt(0) === "D" && currentNotation[EdgePosition].charAt(1) === currentNotation[EdgePosition.charAt(1)]) {
+            whiteEdges.splice(i, 1)
+        }
+    }
+
+    if (whiteEdges.length === 0) {
+        return
+    }
+
+    while (currentNotation["UF"].charAt(0) !== "U") {
+        await move("y")
+        solution.push("y")
+        currentNotation = getNotation()
+    }
+
+    while (currentNotation["F"] !== currentNotation["UF"].charAt(1)) {
+        await move("d")
+        solution.push("d")
+        currentNotation = getNotation()
+    }
+
+    if (currentNotation["UF"].charAt(0) === "U" && (currentNotation["F"] === currentNotation["UF"].charAt(1))) {
+        await move("F2")
+        solution.push("F2")
+    }
+
+    await solveCross()
+}
+
+async function solveFirstLayer() {
+    let currentNotation = getNotation()
+    if (currentNotation["U"] !== "U") {    
+        solution.push("x2")
+        await move("x2")
+        currentNotation = getNotation()
+    }
+
+    let whiteCorners = Object.keys(currentNotation).filter(key => (key.length === 3 && key.charAt(0) === "U"))
+
+    for (let i = whiteCorners.length - 1; i >= 0; i--) {
+        let cornerPosition = getKeyByValue(currentNotation, whiteCorners[i])
+        if (cornerPosition.charAt(0) === "U" && currentNotation[cornerPosition].charAt(1) === currentNotation[cornerPosition.charAt(1)]) {
+            whiteCorners.splice(i, 1)
+        }
+    }
+
+    if (whiteCorners.length === 0) {
+        return
+    }
+    
+    let whiteCornersSorted = [...whiteCorners]
+    for (let i = 0; i < whiteCornersSorted.length; i++) {
+        let element = whiteCornersSorted[i];
+        element = sortString(element)
+        whiteCornersSorted[i] = element
+    }
+
+    async function getACornerOut() {
+        console.log("in getacornerout");
+        while (!(whiteCornersSorted.includes(sortString(currentNotation["UFR"])))) {
+            console.log("y")
+            solution.push("y")
+            await move("y")
+            currentNotation = getNotation()
+        }
+        console.log("R'")
+        solution.push("R'")
+        await move("R'")
+        console.log("D'")
+        solution.push("D'")
+        await move("D'")
+        console.log("R")
+        solution.push("R")
+        await move("R")
+    }
+
+    // if left moves do: world.camera.position.set(-4,4,6)
+    let rotationCount = 0;
+    while (currentNotation["UFR"].includes("U")) {
+        console.log("y")
+        solution.push("y")
+        await move("y")
+        currentNotation = getNotation()
+        rotationCount++
+        if (rotationCount === 4) {
+            await getACornerOut()
+        }
+    }
+
+    rotationCount = 0;
+    let requiredPiece = "U" + currentNotation["F"] + currentNotation["R"]
+    while (sortString(currentNotation["DRF"]) !== sortString(requiredPiece)) {
+        console.log("D")
+        solution.push("D")
+        await move("D")
+        currentNotation = getNotation()
+        rotationCount++
+        if (rotationCount === 4) {
+            console.log("not found");
+            console.log("y")
+            solution.push("y")
+            await move("y")
+            await solveFirstLayer()
+            return
+        }
+    }
+}
+
 await solveDaisy()
-console.log(solution.join(" "));
+await solveCross()
+await solveFirstLayer()
 solution = shrinkMoveArray(solution)
-console.log(solution.join(" "));
+console.log("solution:", solution.join(" "));
 
 for (let i = solution.length-1; i >= 0; i--) {
     await move(reverseMove(solution[i]))
 }
-console.log(getCubeString());
 
-setAnimationSpeed(3)
-for (let index = 0; index < solution.length; index++) {
-    const element = solution[index];
-    await move(element)
+setAnimationSpeed()
+// for (let index = 0; index < solution.length; index++) {
+//     const element = solution[index];
+//     await move(element)
+// }
+
+let playpause = document.querySelector("#playpause")
+let next = document.querySelector("#next")
+let previous = document.querySelector("#previous")
+let moveName = document.querySelector("#move")
+
+let playing = false
+let moves = solution
+let i = 0;
+
+async function playAllMoves() {
+    playing = !playing
+    while (playing && moves[i]) {
+        moveName.innerHTML = moves[i]
+        await move(moves[i])
+        i++
+    }
 }
+
+async function playNextMove() {
+    next.removeEventListener("click", playNextMove)
+    if (moves[i]) {
+        moveName.innerHTML = moves[i]
+        await move(moves[i])
+        i++
+    }
+    next.addEventListener("click", playNextMove)
+}
+
+async function playPreviousMove() {
+    previous.removeEventListener("click", playPreviousMove)
+    if (i) {
+        i--
+        moveName.innerHTML = moves[i-1]
+        await move(reverseMove(moves[i]))
+    }
+    previous.addEventListener("click", playPreviousMove)
+}
+
+playpause.addEventListener("click", playAllMoves)
+next.addEventListener("click", playNextMove)
+previous.addEventListener("click", playPreviousMove)
