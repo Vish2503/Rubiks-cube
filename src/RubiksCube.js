@@ -611,7 +611,7 @@ function shrinkMoveArray(moveArray) {
                 }
             } else {
                 let newMove = moveArray[i].charAt(0)
-                switch ((count + 4) % 4) {
+                switch (((count % 4) + 4) % 4) {
                     case 0:
                         newMove = ""
                         break;
