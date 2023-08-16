@@ -556,7 +556,7 @@ function sortString(str) {
 
 setAnimationSpeed(10000)
 let scramble = generateScramble()
-// let scramble = `R' D' R D R' D' R D`.split(" ")
+// let scramble = `U' D2 F' U' R2 B2 L' D' B R2 F' B2 D2 L' R2 D B U D L2 F' B R' D L'`.split(" ")
 console.log("scramble:", scramble.join(" "));
 for (let i = 0; i < scramble.length; i++) {
     await move(scramble[i])
@@ -673,6 +673,7 @@ async function solveCross() {
 }
 
 async function solveFirstLayer() {
+
     let currentNotation = getNotation()
     if (currentNotation["U"] !== "U") {    
         solution.push("x2")
@@ -700,63 +701,222 @@ async function solveFirstLayer() {
         whiteCornersSorted[i] = element
     }
 
-    async function getACornerOut() {
-        console.log("in getacornerout");
-        while (!(whiteCornersSorted.includes(sortString(currentNotation["UFR"])))) {
-            console.log("y")
+    async function getCornerOut(piece = null) {
+        let condition = piece ? (sortString(currentNotation["UFR"]) !== sortString(piece)) : !(whiteCornersSorted.includes(sortString(currentNotation["UFR"])))
+        let rotation = 0 
+        while (condition) {
             solution.push("y")
             await move("y")
+            rotation++
             currentNotation = getNotation()
+            condition = piece ? (sortString(currentNotation["UFR"]) !== sortString(piece)) : !(whiteCornersSorted.includes(sortString(currentNotation["UFR"])))
         }
-        console.log("R'")
         solution.push("R'")
         await move("R'")
-        console.log("D'")
         solution.push("D'")
         await move("D'")
-        console.log("R")
         solution.push("R")
         await move("R")
+        while (rotation) {
+            solution.push("y'")
+            await move("y'")
+            rotation--
+        }
     }
 
-    // if left moves do: world.camera.position.set(-4,4,6)
     let rotationCount = 0;
     while (currentNotation["UFR"].includes("U")) {
-        console.log("y")
         solution.push("y")
         await move("y")
         currentNotation = getNotation()
         rotationCount++
         if (rotationCount === 4) {
-            await getACornerOut()
+            await getCornerOut()
         }
     }
 
     rotationCount = 0;
     let requiredPiece = "U" + currentNotation["F"] + currentNotation["R"]
     while (sortString(currentNotation["DRF"]) !== sortString(requiredPiece)) {
-        console.log("D")
         solution.push("D")
         await move("D")
         currentNotation = getNotation()
         rotationCount++
         if (rotationCount === 4) {
-            console.log("not found");
-            console.log("y")
-            solution.push("y")
-            await move("y")
-            await solveFirstLayer()
-            return
+            await getCornerOut(requiredPiece)
         }
     }
+
+    if (currentNotation["DRF"].charAt(0) === "U") {
+        solution.push("F")
+        await move("F")
+        solution.push("D'")
+        await move("D'")
+        solution.push("F'")
+        await move("F'")
+        solution.push("D2")
+        await move("D2")
+        currentNotation = getNotation()
+    }
+
+    if (currentNotation["RFD"].charAt(0) === "U") {
+        solution.push("D")
+        await move("D")
+        solution.push("F")
+        await move("F")
+        solution.push("D'")
+        await move("D'")
+        solution.push("F'")
+        await move("F'")
+        currentNotation = getNotation()
+    }
+
+    if (currentNotation["FDR"].charAt(0) === "U") {
+        solution.push("D'")
+        await move("D'")
+        solution.push("R'")
+        await move("R'")
+        solution.push("D")
+        await move("D")
+        solution.push("R")
+        await move("R")
+        currentNotation = getNotation()
+    }
+
+    await solveFirstLayer()
 }
 
+async function solveSecondLayer() {
+    let currentNotation = getNotation()
+    if (currentNotation["D"] !== "U") {    
+        solution.push("x2")
+        await move("x2")
+        currentNotation = getNotation()
+    }
+
+    let secondLayerEdges = ["RF", "RB", "LF", "LB"]
+
+    for (let i = secondLayerEdges.length - 1; i >= 0; i--) {
+        let EdgePosition = getKeyByValue(currentNotation, secondLayerEdges[i])
+        if (currentNotation[EdgePosition].charAt(0) === currentNotation[EdgePosition.charAt(0)] && currentNotation[EdgePosition].charAt(1) === currentNotation[EdgePosition.charAt(1)]) {
+            secondLayerEdges.splice(i, 1)
+        }
+    }
+
+    if (secondLayerEdges.length === 0) {
+        return
+    }
+
+    let secondLayerEdgesSorted = [...secondLayerEdges]
+    for (let i = 0; i < secondLayerEdgesSorted.length; i++) {
+        let element = secondLayerEdgesSorted[i];
+        element = sortString(element)
+        secondLayerEdgesSorted[i] = element
+    }
+
+    async function movingRight() {
+        solution.push("U")
+        await move("U")
+        solution.push("R")
+        await move("R")
+        solution.push("U'")
+        await move("U'")
+        solution.push("R'")
+        await move("R'")
+        solution.push("U'")
+        await move("U'")
+        solution.push("F'")
+        await move("F'")
+        solution.push("U")
+        await move("U")
+        solution.push("F")
+        await move("F")
+    }
+    async function movingLeft() {
+        solution.push("y'")
+        await move("y'")
+        solution.push("U'")
+        await move("U'")
+        solution.push("F'")
+        await move("F'")
+        solution.push("U")
+        await move("U")
+        solution.push("F")
+        await move("F")
+        solution.push("U")
+        await move("U")
+        solution.push("R")
+        await move("R")
+        solution.push("U'")
+        await move("U'")
+        solution.push("R'")
+        await move("R'")
+    }
+    async function getEdgeOut() {
+        while (!(secondLayerEdgesSorted.includes(sortString(currentNotation["FR"])))) {
+            solution.push("y")
+            await move("y")
+            currentNotation = getNotation()
+        }
+        await movingRight()
+    }
+    async function edgeFlip() {
+        let count = 0
+        while (currentNotation["FR"] !== (currentNotation["R"] + currentNotation["F"])) {
+            solution.push("y")
+            await move("y")
+            currentNotation = getNotation()
+            count++
+            if (count === 4) {
+                await getEdgeOut()
+                return
+            }
+        }
+        await movingRight()
+        solution.push("U2")
+        await move("U2")
+        await movingRight()
+    }
+    let rotationCount = 0
+    let yCount = 0
+    while (!(currentNotation["FU"].charAt(1) !== currentNotation["U"] && currentNotation["FU"].charAt(0) === currentNotation["F"])) {
+        solution.push("U")
+        await move("U")
+        currentNotation = getNotation()
+        rotationCount++
+        if (rotationCount === 4) {
+            solution.push("y")
+            await move("y")
+            yCount++
+            if (yCount === 4) {
+                yCount = 0
+                await edgeFlip()
+                await solveSecondLayer()
+                return
+            }
+            currentNotation = getNotation()
+            rotationCount = 0
+        }
+    }
+
+    if (currentNotation["FU"].charAt(1) === currentNotation["R"]) {
+        await movingRight()
+    } else {
+        await movingLeft()
+    }
+
+    await solveSecondLayer()
+}
+ 
 await solveDaisy()
 await solveCross()
 await solveFirstLayer()
+// setAnimationSpeed()
+await solveSecondLayer()
 solution = shrinkMoveArray(solution)
 console.log("solution:", solution.join(" "));
 
+setAnimationSpeed(10000)
 for (let i = solution.length-1; i >= 0; i--) {
     await move(reverseMove(solution[i]))
 }
