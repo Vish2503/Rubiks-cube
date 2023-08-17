@@ -860,23 +860,7 @@ async function solveSecondLayer() {
         }
         await movingRight()
     }
-    async function edgeFlip() {
-        let count = 0
-        while (currentNotation["FR"] !== (currentNotation["R"] + currentNotation["F"])) {
-            solution.push("y")
-            await move("y")
-            currentNotation = getNotation()
-            count++
-            if (count === 4) {
-                await getEdgeOut()
-                return
-            }
-        }
-        await movingRight()
-        solution.push("U2")
-        await move("U2")
-        await movingRight()
-    }
+
     let rotationCount = 0
     let yCount = 0
     while (!(currentNotation["FU"].charAt(1) !== currentNotation["U"] && currentNotation["FU"].charAt(0) === currentNotation["F"])) {
@@ -887,15 +871,15 @@ async function solveSecondLayer() {
         if (rotationCount === 4) {
             solution.push("y")
             await move("y")
+            currentNotation = getNotation()
+            rotationCount = 0
             yCount++
             if (yCount === 4) {
                 yCount = 0
-                await edgeFlip()
+                await getEdgeOut()
                 await solveSecondLayer()
                 return
             }
-            currentNotation = getNotation()
-            rotationCount = 0
         }
     }
 
@@ -907,12 +891,321 @@ async function solveSecondLayer() {
 
     await solveSecondLayer()
 }
+
+async function solveYellowCross() {
+    let currentNotation = getNotation()
+    if (currentNotation["D"] !== "U") {    
+        solution.push("x2")
+        await move("x2")
+        currentNotation = getNotation()
+    }
+
+    let yellowEdges = Object.keys(currentNotation).filter(key => (key.length === 2 && key.charAt(0) === "D"))
+
+    for (let i = yellowEdges.length - 1; i >= 0; i--) {
+        let EdgePosition = getKeyByValue(currentNotation, yellowEdges[i])
+        if (EdgePosition.charAt(0) !== "U") {
+            yellowEdges.splice(i, 1)
+        }
+    }
+
+    if (yellowEdges.length === 4) {
+        return
+    }
+
+    async function orientEdges() {
+        solution.push("F")
+        await move("F")
+        solution.push("U")
+        await move("U")
+        solution.push("R")
+        await move("R")
+        solution.push("U'")
+        await move("U'")
+        solution.push("R'")
+        await move("R'")
+        solution.push("F'")
+        await move("F'")
+    }
+
+    if (yellowEdges.length === 0) {
+        await orientEdges()
+    }
+
+    if (yellowEdges.length === 2) {
+        while (!(yellowEdges.includes(currentNotation["UL"]) && yellowEdges.includes(currentNotation["UR"])) && !(yellowEdges.includes(currentNotation["UL"]) && yellowEdges.includes(currentNotation["UB"]))) {
+            solution.push("U")
+            await move("U")
+            currentNotation = getNotation()
+        }
+
+        await orientEdges()
+    }
+
+    await solveYellowCross()
+}
+
+async function solveYellowFace() {
+    let currentNotation = getNotation()
+    if (currentNotation["D"] !== "U") {    
+        solution.push("x2")
+        await move("x2")
+        currentNotation = getNotation()
+    }
+
+    let yellowCorners = Object.keys(currentNotation).filter(key => (key.length === 3 && key.charAt(0) === "D"))
+
+    let yellowCornersDone = []
+    for (let i = yellowCorners.length - 1; i >= 0; i--) {
+        let cornerPosition = getKeyByValue(currentNotation, yellowCorners[i])
+        if (cornerPosition.charAt(0) === "U") {
+            yellowCornersDone.push(yellowCorners[i])
+            yellowCorners.splice(i, 1)
+        }
+    }
+
+    if (yellowCornersDone.length === 4) {
+        return
+    }
+
+    async function orientCorners() {
+        solution.push("R")
+        await move("R")
+        solution.push("U")
+        await move("U")
+        solution.push("R'")
+        await move("R'")
+        solution.push("U")
+        await move("U")
+        solution.push("R")
+        await move("R")
+        solution.push("U2")
+        await move("U2")
+        solution.push("R'")
+        await move("R'")
+    }
+
+    if (yellowCornersDone.length === 1) {
+        while (currentNotation["ULF"].charAt(0) !== currentNotation["U"]) {
+            solution.push("U")
+            await move("U")
+            currentNotation = getNotation()
+        }
+
+        await orientCorners()
+    }
+
+    if (yellowCornersDone.length === 2) {
+        while (currentNotation["FUL"].charAt(0) !== currentNotation["U"]) {
+            solution.push("U")
+            await move("U")
+            currentNotation = getNotation()
+        }
+
+        await orientCorners()
+    }
+
+    if (yellowCornersDone.length === 0) {
+        while (currentNotation["LFU"].charAt(0) !== currentNotation["U"]) {
+            solution.push("U")
+            await move("U")
+            currentNotation = getNotation()
+        }
+
+        await orientCorners()
+    }
+
+    await solveYellowFace()
+}
+
+async function permuteLastLayerCorners() {
+    let currentNotation = getNotation()
+    let cubestring = getCubeString()
+    if (currentNotation["D"] !== "U") {    
+        solution.push("x2")
+        await move("x2")
+        currentNotation = getNotation()
+    }
+
+    let lastLayerCorners = Object.keys(currentNotation).filter(key => (key.length === 3 && key.charAt(0) === "D"))
+    let lastLayerCornersDone = []
+
+
+    let center
+    if (cubestring[47] === cubestring[45]) {
+        lastLayerCornersDone.push(currentNotation["UBL"])
+        lastLayerCornersDone.push(currentNotation["URB"])
+        center = cubestring[47]
+    }
+    if (cubestring[20] === cubestring[18]) {
+        lastLayerCornersDone.push(currentNotation["ULF"])
+        lastLayerCornersDone.push(currentNotation["UFR"])
+        center = cubestring[20]
+    }
+    if (cubestring[11] === cubestring[9]) {
+        lastLayerCornersDone.push(currentNotation["UFR"])
+        lastLayerCornersDone.push(currentNotation["URB"])
+        center = cubestring[11]
+    }
+    if (cubestring[38] === cubestring[36]) {
+        lastLayerCornersDone.push(currentNotation["UBL"])
+        lastLayerCornersDone.push(currentNotation["ULF"])
+        center = cubestring[38]
+    }
+
+    for (let i = lastLayerCorners.length - 1; i >= 0; i--) {
+        if (lastLayerCornersDone.includes(lastLayerCorners[i])) {
+            lastLayerCorners.splice(i, 1)
+        }
+    }
+
+    if (lastLayerCorners.length === 0) {
+        while (cubestring[11] !== currentNotation["R"]) {
+            solution.push("U")
+            await move("U")
+            currentNotation = getNotation()
+            cubestring = getCubeString()
+        }
+        return
+    }
+
+    async function permuteCorners() {
+        solution.push("R'")
+        await move("R'")
+        solution.push("F")
+        await move("F")
+        solution.push("R'")
+        await move("R'")
+        solution.push("B2")
+        await move("B2")
+        solution.push("R")
+        await move("R")
+        solution.push("F'")
+        await move("F'")
+        solution.push("R'")
+        await move("R'")
+        solution.push("B2")
+        await move("B2")
+        solution.push("R2")
+        await move("R2")
+        solution.push("U'")
+        await move("U'")
+    }
+
+    if (lastLayerCornersDone.length === 2) {    
+        while (currentNotation["B"] !== center) {
+            solution.push("y")
+            await move("y")
+            currentNotation = getNotation()
+        }
+
+        while (!(lastLayerCornersDone.includes(currentNotation["UBL"]) && lastLayerCornersDone.includes(currentNotation["URB"]))) {
+            solution.push("U")
+            await move("U")
+            currentNotation = getNotation()
+        }
+
+        await permuteCorners()
+    }
+
+    if (lastLayerCornersDone.length === 0) {
+        await permuteCorners()
+    }
+
+    await permuteLastLayerCorners()
+}
+
+async function permuteLastLayerEdges() {
+    let currentNotation = getNotation()
+    let cubestring = getCubeString()
+    if (currentNotation["D"] !== "U") {    
+        solution.push("x2")
+        await move("x2")
+        currentNotation = getNotation()
+    }
+
+    let lastLayerEdges = Object.keys(currentNotation).filter(key => (key.length === 2 && key.charAt(0) === "D"))
+    let lastLayerEdgesDone = []
+
+    if (cubestring[47] === cubestring[46]) {
+        lastLayerEdgesDone.push(currentNotation["UB"])
+    }
+    if (cubestring[20] === cubestring[19]) {
+        lastLayerEdgesDone.push(currentNotation["UF"])
+    }
+    if (cubestring[11] === cubestring[10]) {
+        lastLayerEdgesDone.push(currentNotation["UR"])
+    }
+    if (cubestring[38] === cubestring[37]) {
+        lastLayerEdgesDone.push(currentNotation["UL"])
+    }
+
+    for (let i = lastLayerEdges.length - 1; i >= 0; i--) {
+        if (lastLayerEdgesDone.includes(lastLayerEdges[i])) {
+            lastLayerEdges.splice(i, 1)
+        }
+    }
+
+    if (lastLayerEdges.length === 0) {
+        return
+    }
+
+    async function permuteEdges(side) {
+        let way;
+        if (side === "left") {
+            way = "U"
+        } else {
+            way = "U'"
+        }
+        solution.push("F2")
+        await move("F2")
+        solution.push(way)
+        await move(way)
+        solution.push("L")
+        await move("L")
+        solution.push("R'")
+        await move("R'")
+        solution.push("F2")
+        await move("F2")
+        solution.push("L'")
+        await move("L'")
+        solution.push("R")
+        await move("R")
+        solution.push(way)
+        await move(way)
+        solution.push("F2")
+        await move("F2")
+    }
+
+    if (lastLayerEdgesDone.length === 1) {
+        while (currentNotation["UB"] !== lastLayerEdgesDone[0]) {
+            solution.push("y")
+            await move("y")
+            currentNotation = getNotation()
+        }
+
+        if (currentNotation["UF"].charAt(1) === currentNotation["L"]) {
+            await permuteEdges("left")
+        } else {
+            await permuteEdges("right")
+        }
+    }
+
+    if (lastLayerEdgesDone.length === 0) {
+        await permuteEdges("left")
+    }
+
+    await permuteLastLayerEdges()
+}
  
 await solveDaisy()
 await solveCross()
 await solveFirstLayer()
-// setAnimationSpeed()
 await solveSecondLayer()
+await solveYellowCross()
+await solveYellowFace()
+await permuteLastLayerCorners()
+await permuteLastLayerEdges()
 solution = shrinkMoveArray(solution)
 console.log("solution:", solution.join(" "));
 
