@@ -573,12 +573,18 @@ function reverseMove(move) {
     }
 }
 
-function shrinkMoveArray(moveArray) {
+function shrinkMoveArray(moveArray, keepNonMovesFlag = false) {
     let resultArray = []
     let count = null
     let totalCount = 0
     while (true) {
         for (let i = 0; i < moveArray.length; i++) {
+            if (!allowedMoves.includes(moveArray[i])) {
+                if (keepNonMovesFlag) {
+                    resultArray.push(moveArray[i])
+                }
+                continue
+            }
             if (count === null) {
                 switch (moveArray[i].charAt(1)) {
                     case "":
