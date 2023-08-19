@@ -602,6 +602,9 @@ async function solveDaisy() {
     }
     
     let firstEdgePosition = getKeyByValue(currentNotation, whiteEdges[0])
+    if (!solution.daisy.includes(`Current Piece: ${whiteEdges[0]}`)) {
+        solution.daisy.push(`Current Piece: ${whiteEdges[0]}`)
+    }
 
     // if the edge is in the correct position but flipped
     if (firstEdgePosition.charAt(1) === "U") {
@@ -649,7 +652,6 @@ async function solveDaisy() {
 }
 
 async function solveCross() {
-    console.log("in cross");
     let currentNotation = getNotation()
     if (currentNotation["D"] !== "U") {    
         solution.cross.push("x2")
@@ -676,12 +678,17 @@ async function solveCross() {
             currentNotation = getNotation()
         }
         await solveDaisy()
+        currentNotation = getNotation()
     }
 
     while (currentNotation["UF"].charAt(0) !== "U") {
         await move("y")
         solution.cross.push("y")
         currentNotation = getNotation()
+    }
+
+    if (!solution.cross.includes(`Current Piece: ${currentNotation["UF"]}`)) {
+        solution.cross.push(`Current Piece: ${currentNotation["UF"]}`)
     }
 
     while (currentNotation["F"] !== currentNotation["UF"].charAt(1)) {
@@ -699,7 +706,6 @@ async function solveCross() {
 }
 
 async function solveFirstLayer() {
-    console.log("in first layer");
     let currentNotation = getNotation()
     if (currentNotation["U"] !== "U") {    
         solution.firstLayer.push("x2")
@@ -763,6 +769,9 @@ async function solveFirstLayer() {
 
     rotationCount = 0;
     let requiredPiece = "U" + currentNotation["F"] + currentNotation["R"]
+    if (!solution.firstLayer.includes(`Current Piece: ${requiredPiece}`)) {
+        solution.firstLayer.push(`Current Piece: ${requiredPiece}`)
+    }
     while (sortString(currentNotation["DRF"]) !== sortString(requiredPiece)) {
         solution.firstLayer.push("D")
         await move("D")
@@ -774,6 +783,7 @@ async function solveFirstLayer() {
     }
 
     if (currentNotation["DRF"].charAt(0) === "U") {
+        solution.firstLayer.push("Algorithm: downFacingCorner")
         solution.firstLayer.push("F")
         await move("F")
         solution.firstLayer.push("D'")
@@ -782,10 +792,12 @@ async function solveFirstLayer() {
         await move("F'")
         solution.firstLayer.push("D2")
         await move("D2")
+        solution.firstLayer.push("Algorithm: Done")
         currentNotation = getNotation()
     }
 
     if (currentNotation["RFD"].charAt(0) === "U") {
+        solution.firstLayer.push("Algorithm: rightFacingCorner")
         solution.firstLayer.push("D")
         await move("D")
         solution.firstLayer.push("F")
@@ -794,10 +806,12 @@ async function solveFirstLayer() {
         await move("D'")
         solution.firstLayer.push("F'")
         await move("F'")
+        solution.firstLayer.push("Algorithm: Done")
         currentNotation = getNotation()
     }
 
     if (currentNotation["FDR"].charAt(0) === "U") {
+        solution.firstLayer.push("Algorithm: frontFacingCorner")
         solution.firstLayer.push("D'")
         await move("D'")
         solution.firstLayer.push("R'")
@@ -806,6 +820,7 @@ async function solveFirstLayer() {
         await move("D")
         solution.firstLayer.push("R")
         await move("R")
+        solution.firstLayer.push("Algorithm: Done")
         currentNotation = getNotation()
     }
 
@@ -813,7 +828,6 @@ async function solveFirstLayer() {
 }
 
 async function solveSecondLayer() {
-    console.log("in second layer");
     let currentNotation = getNotation()
     if (currentNotation["D"] !== "U") {    
         solution.secondLayer.push("x2")
@@ -842,6 +856,7 @@ async function solveSecondLayer() {
     }
 
     async function movingRight() {
+        solution.secondLayer.push("Algorithm: movingRight")
         solution.secondLayer.push("U")
         await move("U")
         solution.secondLayer.push("R")
@@ -858,8 +873,10 @@ async function solveSecondLayer() {
         await move("U")
         solution.secondLayer.push("F")
         await move("F")
+        solution.secondLayer.push("Algorithm: Done")
     }
     async function movingLeft() {
+        solution.secondLayer.push("Algorithm: movingLeft")
         solution.secondLayer.push("y'")
         await move("y'")
         solution.secondLayer.push("U'")
@@ -878,6 +895,7 @@ async function solveSecondLayer() {
         await move("U'")
         solution.secondLayer.push("R'")
         await move("R'")
+        solution.secondLayer.push("Algorithm: Done")
     }
     async function getEdgeOut() {
         while (!(secondLayerEdgesSorted.includes(sortString(currentNotation["FR"])))) {
@@ -910,6 +928,10 @@ async function solveSecondLayer() {
         }
     }
 
+    if (!solution.secondLayer.includes(`Current Piece: ${currentNotation["FU"]}`)) {
+        solution.secondLayer.push(`Current Piece: ${currentNotation["FU"]}`)
+    }
+
     if (currentNotation["FU"].charAt(1) === currentNotation["R"]) {
         await movingRight()
     } else {
@@ -920,7 +942,6 @@ async function solveSecondLayer() {
 }
 
 async function solveYellowCross() {
-    console.log("in yellow cross");
     let currentNotation = getNotation()
     if (currentNotation["D"] !== "U") {    
         solution.yellowCross.push("x2")
@@ -941,7 +962,8 @@ async function solveYellowCross() {
         return
     }
 
-    async function orientEdges() {
+    async function orientEdges() {        
+        solution.yellowCross.push("Algorithm: orientEdges")
         solution.yellowCross.push("F")
         await move("F")
         solution.yellowCross.push("U")
@@ -954,6 +976,7 @@ async function solveYellowCross() {
         await move("R'")
         solution.yellowCross.push("F'")
         await move("F'")
+        solution.yellowCross.push("Algorithm: Done")
     }
 
     if (yellowEdges.length === 0) {
@@ -974,7 +997,6 @@ async function solveYellowCross() {
 }
 
 async function solveYellowFace() {
-    console.log("in yellow face");
     let currentNotation = getNotation()
     if (currentNotation["D"] !== "U") {    
         solution.yellowFace.push("x2")
@@ -998,6 +1020,7 @@ async function solveYellowFace() {
     }
 
     async function orientCorners() {
+        solution.yellowFace.push("Algorithm: orientCorners")
         solution.yellowFace.push("R")
         await move("R")
         solution.yellowFace.push("U")
@@ -1012,6 +1035,7 @@ async function solveYellowFace() {
         await move("U2")
         solution.yellowFace.push("R'")
         await move("R'")
+        solution.yellowFace.push("Algorithm: Done")
     }
 
     if (yellowCornersDone.length === 1) {
@@ -1048,7 +1072,6 @@ async function solveYellowFace() {
 }
 
 async function permuteLastLayerCorners() {
-    console.log("in pll corners");
     let currentNotation = getNotation()
     let cubestring = getCubeString()
     if (currentNotation["D"] !== "U") {    
@@ -1100,6 +1123,7 @@ async function permuteLastLayerCorners() {
     }
 
     async function permuteCorners() {
+        solution.lastLayerCorners.push("Algorithm: permuteCorners")
         solution.lastLayerCorners.push("R'")
         await move("R'")
         solution.lastLayerCorners.push("F")
@@ -1120,6 +1144,7 @@ async function permuteLastLayerCorners() {
         await move("R2")
         solution.lastLayerCorners.push("U'")
         await move("U'")
+        solution.lastLayerCorners.push("Algorithm: Done")
     }
 
     if (lastLayerCornersDone.length === 2) {    
@@ -1146,7 +1171,6 @@ async function permuteLastLayerCorners() {
 }
 
 async function permuteLastLayerEdges() {
-    console.log("in pll edges");
     let currentNotation = getNotation()
     let cubestring = getCubeString()
     if (currentNotation["D"] !== "U") {    
@@ -1190,6 +1214,7 @@ async function permuteLastLayerEdges() {
         } else {
             way = "U'"
         }
+        solution.lastLayerEdges.push(`Algorithm: permuteEdges${side}`)
         solution.lastLayerEdges.push("F2")
         await move("F2")
         solution.lastLayerEdges.push(way)
@@ -1208,6 +1233,7 @@ async function permuteLastLayerEdges() {
         await move(way)
         solution.lastLayerEdges.push("F2")
         await move("F2")
+        solution.lastLayerEdges.push("Algorithm: Done")
     }
 
     if (lastLayerEdgesDone.length === 1) {
@@ -1239,7 +1265,7 @@ await solveYellowFace()
 await permuteLastLayerCorners()
 await permuteLastLayerEdges()
 steps.forEach(step => {
-    solution[step] = shrinkMoveArray(solution[step])
+    solution[step] = shrinkMoveArray(solution[step], true)
 })
 console.log("solution:", solution);
 
@@ -1310,3 +1336,14 @@ async function playPreviousMove() {
 playpause.addEventListener("click", playAllMoves)
 next.addEventListener("click", playNextMove)
 previous.addEventListener("click", playPreviousMove)
+
+function showSolution() {
+    for (let i = 0; i < moves.length; i++) {
+        if (moves[i].startsWith("Current Piece")) {
+            let pieceToHighlight = moves[i].split(" ").pop()
+            console.log(pieceToHighlight);
+        }
+    }
+}
+
+showSolution()
