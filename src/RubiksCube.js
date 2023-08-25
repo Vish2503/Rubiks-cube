@@ -23,7 +23,12 @@ function createWorld(container) {
     world.start()
 
     rubiksCube = new Rubikscube()
-    rubiksCube.addToScene(world.scene)  
+    rubiksCube.addToScene(world.scene)
+    
+    if (!matchMedia("screen and (min-width: 600px)").matches) {
+        world.camera.fov = 50
+        world.camera.updateProjectionMatrix();
+    }
 }
 
 // this function does a move on the rubiks cube when called, both the animation and moving the cube around.
