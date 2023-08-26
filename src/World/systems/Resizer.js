@@ -1,5 +1,10 @@
 const setSize = (container, camera, renderer) => {
     camera.aspect = container.clientWidth / container.clientHeight
+    if (window.innerWidth / window.innerHeight < 1) {
+        camera.fov = 50
+    } else {
+        camera.fov = 75
+    }
     camera.updateProjectionMatrix();
 
     renderer.setSize(container.clientWidth, container.clientHeight)
