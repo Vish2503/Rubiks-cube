@@ -6,8 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Rubiks Cube</title>
-
+  
   <link rel="stylesheet" href="../style.css">
+
+    
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500&display=swap" rel="stylesheet">
+
 
   <!-- https://github.com/ldez/cubejs -->
   <script type="text/javascript" src="../node_modules/cubejs/lib/cube.js"></script>
@@ -18,15 +24,19 @@
 
 <body>
   <div class="container">
-    <div id="scene-container">
-      <!-- Canvas here -->
-    </div>
     <div class="info">
+      <nav class="nav">
+        <ul class="nav-list">
+          <li><a href="/">Home</a></li>
+          <li><a href="/playground/">Playground</a></li>
+          <li><a href="/beginner/">Beginner</a></li>
+        </ul>
+      </nav>
       <button id="scramble">Scramble</button>
       <button id="solve">Solve (May take sometime for the first time)</button>
-      <a href="/">Home</a>
-      <a href="/playground/">playground</a>
-      <a href="/beginner/">beginner</a>
+    </div>
+    <div id="scene-container">
+      <!-- Canvas here -->
     </div>
   </div>
 </body>
