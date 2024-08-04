@@ -1,8 +1,8 @@
 import { Raycaster, Vector2, Vector3 } from "three";
-import { createWorld, generateScramble, move, rubiksCube, setAnimationSpeed, solveTwoPhase, world } from "../src/RubiksCube"
+import { createWorld, generateScramble } from "../src/Utils";
 
 const container = document.querySelector("#scene-container")
-createWorld(container)
+const [world, rubikscube] = createWorld(container)
 
 world.controls.enableRotate = false;
 world.camera.position.set(5,4,5)
@@ -21,9 +21,9 @@ function addVisiblefaces(){
     j = 1
     for (k = -1; k <= 1; k++) {
         for (i = -1; i <= 1; i++) {
-            [a,b,c] = rubiksCube.indices[i+1][j+1][k+1]
+            [a,b,c] = rubikscube.indices[i+1][j+1][k+1]
             raycaster.set(new Vector3(i,j,k), new Vector3(0,1,0))
-            intersects = raycaster.intersectObjects(rubiksCube.pieces[a][b][c].faces)
+            intersects = raycaster.intersectObjects(rubikscube.pieces[a][b][c].faces)
             allFaces.push(intersects[0].object)
         }
     }
@@ -32,9 +32,9 @@ function addVisiblefaces(){
     i = 1
     for (j = 1; j >= -1; j--) {
         for (k = 1; k >= -1; k--) {
-            [a,b,c] = rubiksCube.indices[i+1][j+1][k+1]
+            [a,b,c] = rubikscube.indices[i+1][j+1][k+1]
             raycaster.set(new Vector3(i,j,k), new Vector3(1,0,0))
-            intersects = raycaster.intersectObjects(rubiksCube.pieces[a][b][c].faces)
+            intersects = raycaster.intersectObjects(rubikscube.pieces[a][b][c].faces)
             allFaces.push(intersects[0].object)
         }
     }
@@ -43,9 +43,9 @@ function addVisiblefaces(){
     k = 1
     for (j = 1; j >= -1; j--) {
         for (i = -1; i <= 1; i++) {
-            [a,b,c] = rubiksCube.indices[i+1][j+1][k+1]
+            [a,b,c] = rubikscube.indices[i+1][j+1][k+1]
             raycaster.set(new Vector3(i,j,k), new Vector3(0,0,1))
-            intersects = raycaster.intersectObjects(rubiksCube.pieces[a][b][c].faces)
+            intersects = raycaster.intersectObjects(rubikscube.pieces[a][b][c].faces)
             allFaces.push(intersects[0].object)
         }
     }
@@ -147,13 +147,13 @@ async function moveEnd(event) {
             if (yDistance > 0) {
                 switch (piecePosition.z) {
                     case 1:
-                        await move("F'")
+                        await rubikscube.move("F'")
                         break
                     case 0:
-                        await move("S'")
+                        await rubikscube.move("S'")
                         break
                     case -1:
-                        await move("B")
+                        await rubikscube.move("B")
                         break
                     default:
                         break
@@ -161,13 +161,13 @@ async function moveEnd(event) {
             } else if (yDistance < 0) {
                 switch (piecePosition.z) {
                     case 1:
-                        await move("F")
+                        await rubikscube.move("F")
                         break
                     case 0:
-                        await move("S")
+                        await rubikscube.move("S")
                         break
                     case -1:
-                        await move("B'")
+                        await rubikscube.move("B'")
                         break
                     default:
                         break
@@ -177,13 +177,13 @@ async function moveEnd(event) {
             if (xDistance > 0) {
                 switch (piecePosition.y) {
                     case 1:
-                        await move("U'")
+                        await rubikscube.move("U'")
                         break
                     case 0:
-                        await move("E")
+                        await rubikscube.move("E")
                         break
                     case -1:
-                        await move("D")
+                        await rubikscube.move("D")
                         break
                     default:
                         break
@@ -191,13 +191,13 @@ async function moveEnd(event) {
             } else if (xDistance < 0) {
                 switch (piecePosition.y) {
                     case 1:
-                        await move("U")
+                        await rubikscube.move("U")
                         break
                     case 0:
-                        await move("E'")
+                        await rubikscube.move("E'")
                         break
                     case -1:
-                        await move("D'")
+                        await rubikscube.move("D'")
                         break
                     default:
                         break
@@ -209,13 +209,13 @@ async function moveEnd(event) {
             if (yDistance > 0) {
                 switch (piecePosition.x) {
                     case 1:
-                        await move("R")
+                        await rubikscube.move("R")
                         break
                     case 0:
-                        await move("M'")
+                        await rubikscube.move("M'")
                         break
                     case -1:
-                        await move("L'")
+                        await rubikscube.move("L'")
                         break
                     default:
                         break
@@ -223,13 +223,13 @@ async function moveEnd(event) {
             } else if (yDistance < 0) {
                 switch (piecePosition.x) {
                     case 1:
-                        await move("R'")
+                        await rubikscube.move("R'")
                         break
                     case 0:
-                        await move("M")
+                        await rubikscube.move("M")
                         break
                     case -1:
-                        await move("L")
+                        await rubikscube.move("L")
                         break
                     default:
                         break
@@ -239,13 +239,13 @@ async function moveEnd(event) {
             if (xDistance > 0) {
                 switch (piecePosition.y) {
                     case 1:
-                        await move("U'")
+                        await rubikscube.move("U'")
                         break
                     case 0:
-                        await move("E")
+                        await rubikscube.move("E")
                         break
                     case -1:
-                        await move("D")
+                        await rubikscube.move("D")
                         break
                     default:
                         break
@@ -253,13 +253,13 @@ async function moveEnd(event) {
             } else if (xDistance < 0) {
                 switch (piecePosition.y) {
                     case 1:
-                        await move("U")
+                        await rubikscube.move("U")
                         break
                     case 0:
-                        await move("E'")
+                        await rubikscube.move("E'")
                         break
                     case -1:
-                        await move("D'")
+                        await rubikscube.move("D'")
                         break
                     default:
                         break
@@ -271,13 +271,13 @@ async function moveEnd(event) {
             if (yDistance > 0) {
                 switch (piecePosition.x) {
                     case 1:
-                        await move("R")
+                        await rubikscube.move("R")
                         break
                     case 0:
-                        await move("M'")
+                        await rubikscube.move("M'")
                         break
                     case -1:
-                        await move("L'")
+                        await rubikscube.move("L'")
                         break
                     default:
                         break
@@ -285,13 +285,13 @@ async function moveEnd(event) {
             } else if (yDistance < 0) {
                 switch (piecePosition.x) {
                     case 1:
-                        await move("R'")
+                        await rubikscube.move("R'")
                         break
                     case 0:
-                        await move("M")
+                        await rubikscube.move("M")
                         break
                     case -1:
-                        await move("L")
+                        await rubikscube.move("L")
                         break
                     default:
                         break
@@ -301,13 +301,13 @@ async function moveEnd(event) {
             if (yDistance > 0) {
                 switch (piecePosition.z) {
                     case 1:
-                        await move("F'")
+                        await rubikscube.move("F'")
                         break
                     case 0:
-                        await move("S'")
+                        await rubikscube.move("S'")
                         break
                     case -1:
-                        await move("B")
+                        await rubikscube.move("B")
                         break
                     default:
                         break
@@ -315,13 +315,13 @@ async function moveEnd(event) {
             } else if (yDistance < 0) {
                 switch (piecePosition.z) {
                     case 1:
-                        await move("F")
+                        await rubikscube.move("F")
                         break
                     case 0:
-                        await move("S")
+                        await rubikscube.move("S")
                         break
                     case -1:
-                        await move("B'")
+                        await rubikscube.move("B'")
                         break
                     default:
                         break
@@ -334,17 +334,17 @@ async function moveEnd(event) {
         let firstSide = getSide(firstFaceDirectionWhenNoSelection)
         let secondSide = getSide(secondFaceDirectionWhenNoSelection)
         if (firstSide === "Front" && secondSide === "Up") {
-            await move("x")
+            await rubikscube.move("x")
         } else if (firstSide === "Up" && secondSide === "Front") {
-            await move("x'")
+            await rubikscube.move("x'")
         } else if (firstSide === "Front" && secondSide === "Right") {
-            await move("y'")
+            await rubikscube.move("y'")
         } else if (firstSide === "Right" && secondSide === "Front") {
-            await move("y")
+            await rubikscube.move("y")
         } else if (firstSide === "Right" && secondSide === "Up") {
-            await move("z'")
+            await rubikscube.move("z'")
         } else if (firstSide === "Up" && secondSide === "Right") {
-            await move("z")
+            await rubikscube.move("z")
         }
     }
 
@@ -367,7 +367,7 @@ async function scrambleCube() {
     let scramble = generateScramble()
     let i = 0;
     while (scramble[i]) {
-        await move(scramble[i])
+        await rubikscube.move(scramble[i])
         i++
     }
     addListeners()
@@ -378,7 +378,7 @@ async function solveCube() {
     let solution = solveTwoPhase()
     let i = 0;
     while (solution[i]) {
-        await move(solution[i])
+        await rubikscube.move(solution[i])
         i++
     }
     addListeners()
