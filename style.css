@@ -9,7 +9,7 @@ body {
     background-color: black;
     color: white;
     overflow: hidden;
-    font-family: 'Rubik', sans-serif;
+    font-family: "Rubik", sans-serif;
 }
 
 a {
@@ -57,7 +57,6 @@ a {
     flex-direction: column;
     position: fixed;
 }
-
 
 @media screen and (aspect-ratio > 1/1) {
     #scene-container {
