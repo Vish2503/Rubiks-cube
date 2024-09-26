@@ -17,16 +17,14 @@ a {
     text-decoration: none;
 }
 
-#scene-container {
-    width: 100vw;
-    height: 50%;
-    display: inline-block;
+button {
+    background-color: transparent;
+    border: none;
 }
 
-.info {
-    background-color: black;
-    color: white;
-    height: 50%;
+#scene-container {
+    width: 100vw;
+    height: 100%;
     display: inline-block;
 }
 
@@ -39,8 +37,9 @@ a {
     height: 100%;
     width: 100%;
     display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
+    gap: 5em;
+    /* flex-direction: column; */
+    /* justify-content: space-evenly; */
 }
 
 .nav-list li {
@@ -48,6 +47,10 @@ a {
     width: 75%;
     margin: 0 auto;
     font-size: 2rem;
+}
+
+.nav-toggle {
+    display: none;
 }
 
 .container {
@@ -58,16 +61,21 @@ a {
     position: fixed;
 }
 
-@media screen and (aspect-ratio > 1/1) {
-    #scene-container {
-        width: 50%;
-        height: 100%;
+@media (max-width: 35em) {
+    .nav-list {
+        position: fixed;
+        inset: 0 0 0 25%;
+        padding: 20vh 2em;
+        flex-direction: column;
+        background-color: rgba(4, 4, 4, 0.8);
+        backdrop-filter: blur(1em);
     }
-    .info {
-        width: 50%;
-        height: 100%;
-    }
-    .container {
-        flex-direction: row;
+
+    .nav-toggle {
+        display: block;
+        z-index: 1000;
+        position: absolute;
+        top: 3em;
+        right: 3em;
     }
 }

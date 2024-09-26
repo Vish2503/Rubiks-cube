@@ -45,7 +45,7 @@ class World {
         const setSize = () => {
             this.camera.aspect = container.clientWidth / container.clientHeight;
             if (window.innerWidth / window.innerHeight < 1) {
-                this.camera.fov = 50;
+                this.camera.fov = 100;
             } else {
                 this.camera.fov = 75;
             }
